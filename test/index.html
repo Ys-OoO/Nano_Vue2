@@ -13,7 +13,7 @@
     const instance = new NanoVue({
       el: '#app',
       template:`
-      <div id="app" class="nano_vue" >
+      <div id="app" class="nano_vue" v-on:click="handleClick" >
         <p> info: {{ info }}</p>
       </div>
     `,
