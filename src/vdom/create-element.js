@@ -1,5 +1,8 @@
-import VNode from './vnode';
+import { createComponent } from './create-component';
 
-export function createElement(instance, tag, data ,children) {
-  return new VNode(instance, tag, data, data && data.key , children, undefined);
+export function createElement(instance, tag, data, children) {
+  const context = instance;
+  let vnode;
+  vnode = createComponent(tag, data, context, children);
+  return vnode;
 }
