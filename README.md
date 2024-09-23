@@ -2,24 +2,30 @@
 Nano_Vue2 aims to further understand the inner workings of Vue2
 
 ## Implemented Features
+* global API:
+  * NanoVue.mixin
+  * NanoVue.component
+  * NanoVue.extend
 * options / Data:
   * data
   * watch
   * computed
-* global API:
-  * nextTick
-  * set
 * options / DOM:
   * el
   * template
   * render
 * options / Lifecycle Hook:
   * _pending..._
-* instance method:
+* instance property:
+  * $data
+  * $options
+  * $el
+* instance method / data:
   * $watch
   * $set
-* directives:
-  * _pending..._
+* instance method / lifecycle:
+  * instance.$mount
+  * instance.$nextTick
 
 
 # Contact me

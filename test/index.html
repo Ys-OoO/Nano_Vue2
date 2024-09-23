@@ -10,13 +10,34 @@
   <script src="../dist/nano_vue.js"></script>
 
   <script>
+    // NanoVue.mixin({
+    //   data:{
+    //     a:1
+    //   },
+    //   beforeCreate(){
+
+    //   },
+    // })
+
+    // NanoVue.component('subComponent',{
+    //   beforeCreate(){
+
+    //   },
+    //   template:`<div>outer subComponent</div>`
+    // })
     const instance = new NanoVue({
       el: '#app',
       template:`
       <div id="app" class="nano_vue" v-on:click="handleClick" >
         <p> info: {{ info }}</p>
+        <subComponent></subComponent>
       </div>
     `,
+      components:{
+        'subComponent':{
+          template:`<div>inner subComponent</div>`
+        }
+      },
       data(){
         return {
           arr:[1,2,[3,4,5]],
@@ -45,9 +66,9 @@
       // }
     });
 
-    setTimeout(()=>{
-      instance.name = 'Ys'
-    },1000)
+    // setTimeout(()=>{
+    //   instance.name = 'Ys'
+    // },1000)
 
     // setTimeout(()=>{
     //   instance.age = 24

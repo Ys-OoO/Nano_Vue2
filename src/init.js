@@ -2,16 +2,18 @@ import { compileToFunctions } from './compiler/index';
 import { mountComponent } from './lifecycle';
 import { initRender } from './render';
 import initState from './state';
+import { meregeOptions } from './utils/options';
 
 /**
- * 初始化Vue实例：
- * el, data
- * $options, $mount....
+ * 初始化实例：
+ * el, data, computed, watch
+ * $options, $mount
+ * 渲染函数_c, _s, _v
  */
 function init(options) {
   const instance = this;
-  // 将配置项注册到实例上
-  instance.$options = options;
+  // 合并配置项，并将配置项注册到实例上
+  instance.$options = meregeOptions(instance.constructor.options, options);
 
   // 初始化状态
   initState(instance);
@@ -56,7 +58,6 @@ function mount(containerEle) {
 }
 
 export default function initMixin(NanoVue) {
-  const instance = this;
   // 注入初始化方法
   NanoVue.prototype._init = init;
 

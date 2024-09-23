@@ -4,6 +4,7 @@
 * 这里沿用构造函数的实现方式
 */
 
+import { initGlobalApi } from './global-api/index';
 import initMixin from './init';
 import { lifecycleMixin } from './lifecycle';
 import { renderMixin } from './render';
@@ -17,8 +18,6 @@ function NanoVue(options) {
 // !扩展原型
 // 注入初始化方法 : _init()
 initMixin(NanoVue);
-
-// 注入
 /**
  * _render()将渲染函数转换为虚拟DOM
  * _update()更新虚拟DOM
@@ -30,5 +29,9 @@ renderMixin(NanoVue);
 lifecycleMixin(NanoVue);
 // 注入 $set $watch
 stateMixin(NanoVue);
+
+// !扩展类
+// 初始化全局API : mixin
+initGlobalApi(NanoVue);
 
 export default NanoVue;

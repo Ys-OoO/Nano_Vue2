@@ -60,7 +60,7 @@ function initData(instance) {
   observe(data);
 }
 
-function initComputed(instance, computedOpts){
+function initComputed(instance, computedOpts) {
   const watchers = (instance._computedWatchers = Object.create(null));
 
   for (const key in computedOpts) {
@@ -68,47 +68,47 @@ function initComputed(instance, computedOpts){
     const getter = isFunc(userDef) ? userDef : userDef.get;
 
     // 创建 Computed Watcher
-    watchers[key] = new Watcher(instance,getter,()=>{},{
+    watchers[key] = new Watcher(instance, getter, () => { }, {
       lazy: true, // Coputed Watcher的标识
     })
 
     // 对computed key 进行劫持
-    defineComputed(instance,key,userDef);
+    defineComputed(instance, key, userDef);
   }
 }
 
 
-function defineComputed(instance,key,userDef){
+function defineComputed(instance, key, userDef) {
   const sharedPropertyDefinition = {
     enumerable: true,
     configurable: true,
-    get: ()=>{},
-    set: ()=>{}
+    get: () => { },
+    set: () => { }
   }
 
-  if(isFunc(userDef)){
+  if (isFunc(userDef)) {
     sharedPropertyDefinition.get = createComputedGetter(key);
-  }else{
+  } else {
     sharedPropertyDefinition.get = createComputedGetter(key);
     sharedPropertyDefinition.set = userDef.set;
   }
-  Object.defineProperty(instance,key,sharedPropertyDefinition);
+  Object.defineProperty(instance, key, sharedPropertyDefinition);
 }
 
-function createComputedGetter(key){
-  return function computedGetter(){
+function createComputedGetter(key) {
+  return function computedGetter() {
     const watcher = this._computedWatchers[key];
-    
-    if(watcher){
+
+    if (watcher) {
       // dirty 表示该watcher是否需要重新计算
-      if(watcher.dirty){
+      if (watcher.dirty) {
         watcher.evaluate();
       }
 
       // evaluate执行完后，相关属性会收集到对应的Computed Watcher
       // 但是此时改变了相关属性并不会触发试图更新，因为相关的属性没有收集 Render Watcher
       // 因此这里进一步收集 Render Watcher
-      if(Dep.target){
+      if (Dep.target) {
         watcher.depend();
       }
       return watcher.value;
@@ -141,7 +141,7 @@ function createWatcher(instance, expOrFn, handler, options) {
 
 /**
  * 初始化状态
- * 包括：props, data, computed, watch
+ * 包括：data, computed, watch
  */
 export default function initState(instance) {
   const options = instance.$options;
@@ -151,8 +151,8 @@ export default function initState(instance) {
   }
 
   // init computed
-  if(options.computed){
-    initComputed(instance,options.computed);
+  if (options.computed) {
+    initComputed(instance, options.computed);
   }
 
   // init watch
@@ -173,7 +173,7 @@ export function stateMixin(NanoVue) {
 
     options = options || {};
     options.user = true; // 标识该watcher为 User Watcher
-    
+
     // 创建 watcher
     const watcher = new Watcher(instance, expOrFn, cb, options);
 
