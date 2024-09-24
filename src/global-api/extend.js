@@ -11,18 +11,21 @@ export function initExtend(NanoVue) {
 
     NanoVue.extend = function (extendOptions) {
         const Super = this; // 父类
-        const Sub = function NanoVueComponent(baseThis, options) {
-            baseThis._init(options);
+        const Sub = function NanoVueComponent(options) {
+            this._init(options); // this是子类实例, _init方法在下面原型继承时Super.prototype上，也是就NanoVue.prototype
         }
         // 原型继承
         Sub.prototype = Object.create(Super.prototype);
         Sub.prototype.constructor = Sub;
-        // 初始化子类
+
         Sub.cid = cid++;
         const name = extendOptions.name;
-        // 合并全局mixin
+        // 合并全局mixin, 使全局的mixin也应用到组件类上
         Sub.options = meregeOptions(Super.options, extendOptions);
-        Sub.options.components[name] = Sub;
+        // 源码注释：启用递归自查询
+        // if (name) {
+        //     Sub.options.components[name] = Sub;
+        // }
         Sub['super'] = Super;
 
         return Sub;

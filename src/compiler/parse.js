@@ -36,7 +36,7 @@ function start(tagName, attrList) { // 构造AST树：处理开始标签
   stack.push(astElement);
 }
 function chars(text) { // 构造AST树：处理内容
-  text = text.replace(/\s/g, "");
+  text = text.replace(/\s+/g, "");
   let parent = stack[stack.length - 1];
   if (text) {
     parent.children.push(createAstText(text));
@@ -87,6 +87,7 @@ function end(tagName) { // 构造AST树：处理结束标签
  * @returns AST 
  */
 export function parseTemplate(template) {
+  root = null;
   /**
    * 每解析完一段模板，就将其删除/或者说向前移动指针
    * @param {number} len  
