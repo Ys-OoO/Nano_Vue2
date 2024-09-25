@@ -23,6 +23,12 @@ export function createElement(instance, tag, data, children) {
   return vnode;
 }
 
+/**
+ * 判断$options.components中是否存在tag，支持驼峰和短横线命名
+ * @param {*} componentOptions  $options.components
+ * @param {*} tag 
+ * @returns Ctor，可能是来源于全局组件的NanoVueComponent，也可能是内部子组件的配置对象
+ */
 function resolveComponent(componentOptions, tag) {
   if (componentOptions[tag]) {
     return componentOptions[tag];

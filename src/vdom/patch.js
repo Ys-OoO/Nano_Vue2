@@ -21,7 +21,6 @@ function sameInputType(a, b) {
  * 根据虚拟节点创建组件
  * 根据vnode.data.hook 判断是否是组件
  *    是组件就调用init进行初始化 & 手动挂载$mount
- *    
  */
 function createComponent(vnode) {
   let i = vnode.data;
@@ -71,7 +70,8 @@ function createElm(vnode) {
 }
 
 /**
- * 将 
+ * 根据虚拟节点生成真实DOM并挂载
+ * ......后续还会承载一些Diff的工作
  * @param {} oldVnode 老的虚拟节点
  * @param {} vnode 新的虚拟节点
  */
