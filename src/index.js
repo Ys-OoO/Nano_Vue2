@@ -4,11 +4,11 @@
 * 这里沿用构造函数的实现方式
 */
 
-import { initGlobalApi } from './global-api/index';
-import initMixin from './init';
-import { lifecycleMixin } from './lifecycle';
-import { renderMixin } from './render';
-import { stateMixin } from './state';
+import { initGlobalApi } from './global-api/index.js';
+import initMixin from './init.js';
+import { lifecycleMixin } from './lifecycle.js';
+import { renderMixin } from './render.js';
+import { stateMixin } from './state.js';
 
 function NanoVue(options) {
   // do init

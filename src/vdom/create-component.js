@@ -1,5 +1,5 @@
-import { isObject, isUndef } from "../utils/index";
-import VNode from "./vnode";
+import { isObject, isUndef } from "../utils/index.js";
+import VNode from "./vnode.js";
 
 export function createComponent(Ctor, tag, data, context, children) {
     if (isUndef(Ctor)) {

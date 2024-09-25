@@ -1,4 +1,4 @@
-import { meregeOptions } from "../utils/options";
+import { meregeOptions } from "../utils/options.js";
 
 /**
  * 初始化子组件类，该类为 NanoVueComponent，其父类为 NanoVue

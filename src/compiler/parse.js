@@ -1,4 +1,4 @@
-import { addAttr, addHandler } from "./helper";
+import { addAttr, addHandler } from "./helper.js";
 // 源码中使用正则表达式来解析模板，在Vue3中则会使用状态机来进行：
 // 模板字符串 --词法分析--> tokens --语法分析--> AST
 const ncname = `[a-zA-Z_][\\-\\.0-9_a-zA-Z]*`; // 标签名 

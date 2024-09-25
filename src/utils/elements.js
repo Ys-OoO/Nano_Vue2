@@ -1,4 +1,4 @@
-import { makeMap } from "./index";
+import { makeMap } from "./index.js";
 
 export function isReservedTag(tag) {
     return isHTMLTag(tag);

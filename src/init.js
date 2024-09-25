@@ -1,8 +1,8 @@
-import { compileToFunctions } from './compiler/index';
-import { mountComponent } from './lifecycle';
-import { initRender } from './render';
-import initState from './state';
-import { meregeOptions } from './utils/options';
+import { compileToFunctions } from './compiler/index.js';
+import { mountComponent } from './lifecycle.js';
+import { initRender } from './render.js';
+import initState from './state.js';
+import { meregeOptions } from './utils/options.js';
 
 /**
  * 初始化实例：

@@ -1,7 +1,7 @@
-import { toString } from './utils/index';
-import { nextTick } from './utils/next-tick';
-import { createElement } from './vdom/create-element';
-import { createTextVNode } from './vdom/create-text';
+import { toString } from './utils/index.js';
+import { nextTick } from './utils/next-tick.js';
+import { createElement } from './vdom/create-element.js';
+import { createTextVNode } from './vdom/create-text.js';
 export function initRender(instance) {
   instance._c = (tag, data, children) => createElement(instance, tag, data, children);
   instance._v = (t) => createTextVNode(instance, t);

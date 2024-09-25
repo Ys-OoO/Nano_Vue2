@@ -1,4 +1,8 @@
-import { isDef, isUndef } from "../utils/index";
+import { isDef, isUndef } from "../utils/index.js";
+import { updateAttrs } from "./attrs.js";
+import VNode from "./vnode.js";
+
+const emptyNode = new VNode(undefined, '', {}, []);
 
 function sameVnode(a, b) {
   return (
@@ -59,6 +63,12 @@ function createElm(vnode) {
       for (let i = 0; i < children.length; ++i) {
         const child = createElm(children[i]);
 
+        if (isDef(data)) {
+          // 添加属性，源码中使用的是invokeCreateHooks,
+          // 传入的oldVnode为一个空的Vnode，表示为初次添加属性
+          updateAttrs(emptyNode, vnode);
+        }
+
         vnode.elm.appendChild(child);
       }
     }
@@ -70,22 +80,41 @@ function createElm(vnode) {
 }
 
 /**
+ * 针对相同tag的VNode进行更细粒度的 初始化/diff
+ * @param {*} oldVnode 
+ * @param {*} vnode 
+ */
+function patchVnode(oldVnode, vnode) {
+  if (oldVnode === vnode) return
+
+  const elm = (vnode.elm = oldVnode.elm);
+
+  // 处理标签属性attrs,存放于data
+  if (isDef(vnode.data)) {
+    updateAttrs(oldVnode, vnode);
+  }
+
+  // 处理文本节点
+}
+/**
  * 根据虚拟节点生成真实DOM并挂载
  * ......后续还会承载一些Diff的工作
  * @param {} oldVnode 老的虚拟节点
  * @param {} vnode 新的虚拟节点
  */
 export function patch(oldVnode, vnode) {
-  if (isUndef(oldVnode)) { // 不存在旧虚拟节点，说明当前为 **组件** ，无对应的$el选项，因此也没有oldVnode
+  if (isUndef(oldVnode)) {
+    // *不存在旧虚拟节点，说明当前为 **组件** ，无对应的$el选项，因此也没有oldVnode
+    // 源码注释：空挂载（可能作为组件），创建新的根元素
     createElm(vnode);
   } else {
     const isRealElement = isDef(oldVnode.nodeType);
-    if (!isRealElement && sameVnode(oldVnode, vnode)) { // （旧的节点不是真实DOM，且新旧vnode相同） 
-      // 细粒度更新，Vue会尝试复用现有的DOM结构并只更新必要的部分，而不是完全重建DOM树
+    if (!isRealElement && sameVnode(oldVnode, vnode)) { // *（旧的节点不是真实DOM，且新旧vnode相同） 
+      // 细粒度更新，Vue会尝试复用现有的虚拟DOM结构并只更新必要的部分，而不是完全重建DOM树
+      patchVnode(oldVnode, vnode);
     } else {
-
       const parentElm = oldVnode.parentNode;
-      if (isRealElement) { // 旧节点是真实DOM ———— 首次挂载，此时oldVnode 一般为 #app的DOM
+      if (isRealElement) { // *旧节点是真实DOM ———— 首次挂载，此时oldVnode 一般为 #app的DOM
         /**
          * 删除旧节点:
          *  1. 根据vnode创建新的DOM并插入
@@ -101,6 +130,15 @@ export function patch(oldVnode, vnode) {
         if (isDef(parentElm)) {
           parentElm.removeChild(oldVnode);
         }
+      } else {
+        // *旧的节点不是真实DOM，且新旧vnode不相同
+        // *直接替换，不再 diff 子节点
+
+        //创建新节点
+        vnode.elm = createElm(vnode);
+
+        // 替换
+        oldVnode.elm.parentNode.replaceChild(vnode.elm, oldVnode.elm);
       }
     }
   }

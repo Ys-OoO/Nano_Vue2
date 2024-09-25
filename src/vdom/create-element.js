@@ -1,6 +1,6 @@
-import { createComponent } from './create-component';
-import { isReservedTag } from '../utils/elements';
-import VNode from './vnode';
+import { createComponent } from './create-component.js';
+import { isReservedTag } from '../utils/elements.js';
+import VNode from './vnode.js';
 
 /**
  * 渲染函数: _c

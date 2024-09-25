@@ -1,5 +1,5 @@
-import Watcher from './observer/watcher';
-import { patch } from './vdom/patch';
+import Watcher from './observer/watcher.js';
+import { patch } from './vdom/patch.js';
 
 export function lifecycleMixin(NanoVue) {
   NanoVue.prototype._update = function (vnode) {

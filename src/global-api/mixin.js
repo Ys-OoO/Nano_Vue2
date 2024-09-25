@@ -1,4 +1,4 @@
-import { meregeOptions } from "../utils/options";
+import { meregeOptions } from "../utils/options.js";
 
 /**
  * 初始化混入（为全局的NanoVue类追加mixin方法）,提供链式调用

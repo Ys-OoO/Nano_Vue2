@@ -1,5 +1,5 @@
-import { initExtend } from "./extend";
-import { initMixin } from "./mixin";
+import { initExtend } from "./extend.js";
+import { initMixin } from "./mixin.js";
 
 export function initGlobalApi(NanoVue) {
     // 全局options，不属于某个实例
