@@ -1,3 +1,5 @@
+import transformers from "./transformers/index.js";
+
 /**
  * 将AST树转换为 render 函数
  * e.g.
@@ -68,8 +70,13 @@ function genData(el) {
   //目前只处理attrs
   let data = '{';
 
+  // class/style 
+  transformers.forEach(transformers => {
+    data += transformers.genData(el);
+  })
+
   if (el.attrs) { // attrs
-    data += `${genProps(el.attrs)}`;
+    data += `attrs:${genProps(el.attrs)},`;
   }
 
   if (el.events) { // events
@@ -87,6 +94,7 @@ function genProps(props) {
 
     ret += `${prop.name}:${JSON.stringify(value)},`
   }
+  ret = `{${ret.slice(0, -1)}}`
   return ret;
 }
 

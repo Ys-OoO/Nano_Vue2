@@ -1,4 +1,5 @@
 import { addAttr, addHandler } from "./helper.js";
+import transformers from "./transformers/index.js";
 // 源码中使用正则表达式来解析模板，在Vue3中则会使用状态机来进行：
 // 模板字符串 --词法分析--> tokens --语法分析--> AST
 const ncname = `[a-zA-Z_][\\-\\.0-9_a-zA-Z]*`; // 标签名 
@@ -19,17 +20,17 @@ function createAstText(text) {
     text,
   }
 }
-function createAstElement(tagName, attrList) {
+function createAstElement(tagName, attrsList) {
   return {
     tag: tagName,
     type: 1,
     children: [],
     parent: null,
-    attrList
+    attrsList
   }
 }
-function start(tagName, attrList) { // 构造AST树：处理开始标签
-  const astElement = createAstElement(tagName, attrList);
+function start(tagName, attrsList) { // 构造AST树：处理开始标签
+  const astElement = createAstElement(tagName, attrsList);
   if (!root) {
     root = astElement;
   }
@@ -66,7 +67,7 @@ function end(tagName) { // 构造AST树：处理结束标签
  *    ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
  * {
  *  tag: 'div',
- *  attrList: [{name:'id',value:'app'}],
+ *  attrsList: [{name:'id',value:'app'}],
  *  attrs:[{name:'id',value:'app'}],
  *  event:{
  *    click:{
@@ -88,6 +89,7 @@ function end(tagName) { // 构造AST树：处理结束标签
  */
 export function parseTemplate(template) {
   root = null;
+  stack = [];
   /**
    * 每解析完一段模板，就将其删除/或者说向前移动指针
    * @param {number} len  
@@ -103,7 +105,7 @@ export function parseTemplate(template) {
     if (startMatch) {
       const matched = {
         tagName: startMatch[1],
-        attrList: []
+        attrsList: []
       }
       // 截取当前template: <div id='app'>{{123}}</div> ----> id='app'>{{123}}</div>
       advance(startMatch[0].length);
@@ -121,7 +123,7 @@ export function parseTemplate(template) {
 
         // 此时已经匹配到属性了
         // 保存属性
-        matched.attrList.push({
+        matched.attrsList.push({
           name: attrMatch[1],
           value: attrMatch[3] || attrMatch[4] || attrMatch[5]
         })
@@ -139,7 +141,7 @@ export function parseTemplate(template) {
       // 匹配开始标签
       const startTagMatch = parseStratTag(template);
       if (startTagMatch) {
-        start(startTagMatch.tagName, startTagMatch.attrList);
+        start(startTagMatch.tagName, startTagMatch.attrsList);
         continue;
       }
       // 匹配结束标签
@@ -174,6 +176,11 @@ function closeElement(element) {
  * 处理AST Node
  */
 function processElement(element) {
+  // 将attrs中的class、style等提取出来
+  transformers.forEach(transformer => {
+    element = transformer.transformNode(element) || element;
+  });
+
   processAttrs(element);
 }
 
@@ -183,7 +190,7 @@ const onRE = /^@|^v-on:/
  * 处理 标签的 Attrs
  */
 function processAttrs(element) {
-  const list = element.attrList;
+  const list = element.attrsList;
   list.forEach(attr => {
     let name = attr.name;
     let value = attr.value;
@@ -196,6 +203,7 @@ function processAttrs(element) {
       }
     } else {
       // 其他attrs id/class...
+      // 实际上会将 style/class等更细粒度区分
       addAttr(element, name, value);
     }
   });

@@ -37,3 +37,17 @@ export function addAttr(el, name, value) {
     const attrs = el.attrs || (el.attrs = []);
     attrs.push({ name, value });
 }
+
+export function getAndRemoveAttr(el, name) {
+    let val;
+    const list = el.attrsList;
+    for (let i = 0, l = list.length; i < l; i++) {
+        if (list[i].name === name) {
+            val = list[i].value;
+            list.splice(i, 1);
+            break;
+        }
+    }
+
+    return val;
+}

@@ -80,7 +80,7 @@ function createElm(vnode) {
 }
 
 /**
- * 针对相同tag的VNode进行更细粒度的 初始化/diff
+ * 针对相同tag的VNode进行更细粒度的 初始化 & diff
  * @param {*} oldVnode 
  * @param {*} vnode 
  */
@@ -89,7 +89,7 @@ function patchVnode(oldVnode, vnode) {
 
   const elm = (vnode.elm = oldVnode.elm);
 
-  // 处理标签属性attrs,存放于data
+  // 处理标签属性attrs,style,class,源码中对应 invokeCreateHooks
   if (isDef(vnode.data)) {
     updateAttrs(oldVnode, vnode);
   }
