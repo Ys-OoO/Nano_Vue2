@@ -1,4 +1,4 @@
-import { addAttr, addHandler } from "./helper.js";
+import { addAttr, addHandler, getAndRemoveAttr } from "./helper.js";
 import transformers from "./transformers/index.js";
 // 源码中使用正则表达式来解析模板，在Vue3中则会使用状态机来进行：
 // 模板字符串 --词法分析--> tokens --语法分析--> AST
@@ -169,7 +169,12 @@ export function parseTemplate(template) {
  * @param {ASTElement} element 
  */
 function closeElement(element) {
+  processKey(element);
   processElement(element);
+}
+
+function processKey(element) {
+  element.key = getAndRemoveAttr(element, 'key');
 }
 
 /**
@@ -202,8 +207,7 @@ function processAttrs(element) {
         addHandler(element, name, value);
       }
     } else {
-      // 其他attrs id/class...
-      // 实际上会将 style/class等更细粒度区分
+      // 其他attrs id...
       addAttr(element, name, value);
     }
   });

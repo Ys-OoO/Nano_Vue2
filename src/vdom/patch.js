@@ -4,6 +4,7 @@ import VNode from "./vnode.js";
 
 const emptyNode = new VNode(undefined, '', {}, []);
 
+// ~ BEGIN : 一些内部方法
 function sameVnode(a, b) {
   return (
     a.key === b.key &&
@@ -20,6 +21,44 @@ function sameInputType(a, b) {
   const typeB = isDef((i = b.data)) && isDef((i = i.attrs)) && i.type
   return typeA === typeB
 }
+
+function addVnodes(parentElm, vnodes, startIdx, endIdx) {
+  for (; startIdx <= endIdx; startIdx++) {
+    const vnode = vnodes[startIdx];
+    const el = createElm(vnode);
+    parentElm.appendChild(el);
+  }
+}
+
+function removeVnodes(vnodes, startIdx, endIdx, parentElm) {
+  for (; startIdx <= endIdx; startIdx++) {
+    const ch = vnodes[startIdx];
+    if (isDef(ch)) {
+      const parent = ch.parent || parentElm;
+      if (isDef(parent)) {
+        parent.removeChild(ch.elm);
+      }
+    }
+  }
+}
+
+function createKeyToOldIdx(children, beginIdx, endIdx) {
+  let i, key
+  const map = {}
+  for (i = beginIdx; i <= endIdx; ++i) {
+    key = children[i].key
+    if (isDef(key)) map[key] = i
+  }
+  return map
+}
+
+function findIdxInOld(node, oldCh, start, end) {
+  for (let i = start; i < end; i++) {
+    const c = oldCh[i]
+    if (isDef(c) && sameVnode(node, c)) return i
+  }
+}
+// ~ END : 一些内部方法
 
 /**
  * 根据虚拟节点创建组件
@@ -59,7 +98,7 @@ function createElm(vnode) {
 
   if (isDef(tag)) { // 创建元素节点
     vnode.elm = document.createElement(tag);
-    if (children.length) {
+    if (children && children.length) {
       for (let i = 0; i < children.length; ++i) {
         const child = createElm(children[i]);
 
@@ -80,11 +119,98 @@ function createElm(vnode) {
 }
 
 /**
+ * * 核心Diff（同层比较 & 双端索引）：当两个节点tag相同时，且都存在子节点时的Diff
+ * 同层比较：只会比较同一层级的节点，即oldCh和newCh的关系
+ * 双端索引：分别指向oldCh和newCh的首尾
+ * 
+ * ^对比情况有：新头===旧头  新尾===旧尾  旧头===新尾 旧尾===新头 四者都不相等
+ */
+function updateChildren(parentElm, oldCh, newCh) {
+  // 双指针
+  let oldStartIdx = 0;
+  let newStartIdx = 0;
+  let oldEndIdx = oldCh.length - 1;
+  let newEndIdx = newCh.length - 1;
+
+  // 指针对应的初始节点
+  let oldStartVnode = oldCh[0];
+  let oldEndVnode = oldCh[oldEndIdx];
+  let newStartVnode = newCh[0];
+  let newEndVnode = newCh[newEndIdx];
+
+  // 乱序时使用
+  let oldKeyToIdxMap; // oldCh中各节点key:idx的map key为节点的key，idx为节点在oldCh中的索引
+  let idxInOld; // oldKeyToIdxMap[oldVnode.key]
+  let vnodeToMove; // 需要移动的节点
+
+  // 遍历新旧子节点列表的最小长度
+  while (oldStartIdx <= oldEndIdx && newStartIdx <= newEndIdx) {
+    if (isUndef(oldStartVnode)) {
+      oldStartVnode = oldCh[++oldStartIdx];
+    } else if (isUndef(oldEndVnode)) {
+      oldEndVnode = oldCh[--oldEndIdx];
+    } else if (sameVnode(oldStartVnode, newStartVnode)) { // ^新头===旧头
+      patchVnode(oldStartVnode, newStartVnode);
+      oldStartVnode = oldCh[++oldStartIdx];
+      newStartVnode = newCh[++newStartIdx];
+    } else if (sameVnode(oldEndVnode, newEndVnode)) { // ^新尾===旧尾
+      patchVnode(oldEndVnode, newEndVnode);
+      oldEndVnode = oldCh[--oldEndIdx];
+      newEndVnode = newCh[--newEndIdx];
+    } else if (sameVnode(oldStartVnode, newEndVnode)) { // ^旧头===新尾
+      patchVnode(oldStartVnode, newEndVnode);
+      // 移动：将旧头移动到旧尾的下一个的前面
+      parentElm.insertBefore(oldStartVnode.elm, oldEndVnode.elm.nextSibling);
+      oldStartVnode = oldCh[++oldStartIdx];
+      newEndVnode = newCh[--newEndIdx];
+    } else if (sameVnode(oldEndVnode, newStartVnode)) { // ^旧尾===新头
+      patchVnode(oldEndVnode, newStartVnode);
+      //移动：将旧尾移动到旧头前面
+      parentElm.insertBefore(oldEndVnode.elm, oldStartVnode.elm);
+      oldEndVnode = oldCh[--oldEndIdx];
+      newStartVnode = newCh[++newStartIdx];
+    } else {
+      if (isUndef(oldKeyToIdxMap)) // 生成oldCh的{key:idx}的map
+        oldKeyToIdxMap = createKeyToOldIdx(oldCh, oldStartIdx, oldEndIdx);
+      // 查找newStartVnode是否可复用
+      idxInOld = isDef(newStartVnode.key) ? oldKeyToIdxMap[newStartVnode.key] : findIdxInOld(newStartVnode, oldCh, oldStartIdx, oldEndIdx);
+      if (isUndef(idxInOld)) { // 没有找到可复用的oldVnode
+        const elm = createElm(newStartVnode);
+        parentElm.appendChild(elm);
+      } else { // 可以复用
+        vnodeToMove = oldCh[idxInOld];
+        if (sameVnode(vnodeToMove, newStartVnode)) {
+          // 更新属性等，处理子节点
+          patchVnode(vnodeToMove, newStartVnode, newCh, newStartIdx);
+          oldCh[idxInOld] = undefined;
+          // 插入
+          parentElm.insertBefore(vnodeToMove.elm, oldStartVnode.elm);
+        } else {
+          // same key but different element. treat as new element
+          const elm = createElm(newStartVnode);
+          parentElm.appendChild(elm);
+        }
+      }
+      newStartVnode = newCh[++newStartIdx];
+    }
+  }
+
+  // ^ 此时oldCh和newCh中最短项已经处理完了，接下来要处理剩余部分
+  if (oldStartIdx > oldEndIdx) { // newCh没处理完，添加对应节点
+    addVnodes(parentElm, newCh, newStartIdx, newEndIdx);
+  } else if (newStartIdx > newEndIdx) {// oldCh没处理完,删除对应节点
+    removeVnodes(oldCh, oldStartIdx, oldEndIdx, parentElm);
+  }
+}
+
+/**
+ * * Diff 
+ * 旧的节点不是真实DOM，且新旧vnode相同
  * 针对相同tag的VNode进行更细粒度的 初始化 & diff
  * @param {*} oldVnode 
  * @param {*} vnode 
  */
-function patchVnode(oldVnode, vnode) {
+function patchVnode(oldVnode, vnode, chList, index) {
   if (oldVnode === vnode) return
 
   const elm = (vnode.elm = oldVnode.elm);
@@ -94,11 +220,39 @@ function patchVnode(oldVnode, vnode) {
     updateAttrs(oldVnode, vnode);
   }
 
-  // 处理文本节点
+
+  /**
+   * ^处理子节点 分别考虑以下情况:
+   *    * 双方都有子节点
+   *    * 一方有子节点，一方没有
+   *      分解为：
+   *        & 旧节点没有子节点&新节点有子节点
+   *        & 旧节点有子节点&新节点没有子节点
+   */
+  const oldCh = oldVnode.children;
+  const ch = vnode.children;
+
+  if (isUndef(vnode.text)) {
+    if (isDef(oldCh) && isDef(ch)) { // * 都有子节点
+      updateChildren(elm, oldCh, ch);
+    } else if (isDef(ch)) { // & 旧节点没有子节点&新节点有子节点
+      if (isDef(oldVnode.text)) elm.textContent = ''; // 清空旧的文本节点
+      addVnodes(elm, ch, 0, ch.length - 1);
+    } else if (isDef(oldCh)) { // & 旧节点有子节点 & 新节点没有子节点
+      // !这个分支貌似无法触发，因为使用v-if的节点会默认生成空节点，源码中这里只做了移除多余旧子节点
+      // !所以先不考虑该case，直接暴力修改DOM
+      removeVnodes(oldCh, 0, oldCh.length - 1);
+      elm.innerHTML = ``;
+    }
+  } else {
+    // 处理文本节点
+    if (oldVnode.text !== vnode.text) {
+      elm.textContent = vnode.text;
+    }
+  }
 }
 /**
  * 根据虚拟节点生成真实DOM并挂载
- * ......后续还会承载一些Diff的工作
  * @param {} oldVnode 老的虚拟节点
  * @param {} vnode 新的虚拟节点
  */
@@ -124,7 +278,7 @@ export function patch(oldVnode, vnode) {
         let elm = createElm(vnode);
         vnode.elm = elm;
         //插入
-        parentElm.insertBefore(elm, oldVnode.nextSibiling);
+        parentElm.insertBefore(elm, oldVnode.nextSibling);
 
         // 删除旧节点
         if (isDef(parentElm)) {

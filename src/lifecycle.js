@@ -6,8 +6,15 @@ export function lifecycleMixin(NanoVue) {
     const instance = this;
     const { $el } = instance;
 
-    // 将虚拟DOM vnode 转换为 真实DOM 并替换/更新 $el
-    instance.$el = patch($el, vnode);
+    const prevVnode = instance._vnode;
+    instance._vnode = vnode;
+    if (!prevVnode) { // 初次渲染
+      // 将虚拟DOM vnode 转换为 真实DOM 并替换/更新 $el
+      instance.$el = patch($el, vnode);
+    } else { // diff 更新
+      instance.$el = patch(prevVnode, vnode);
+    }
+
   }
 }
 

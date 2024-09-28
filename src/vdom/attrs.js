@@ -6,6 +6,7 @@ import { isUndef } from "../utils/index.js";
  * @param {*} vnode 
  */
 export function updateAttrs(oldVnode, vnode) {
+    // 由于这里简化了对style和class的处理，因此不直接拦截
     // if (isUndef(oldVnode.data.attrs) && isUndef(vnode.data.attrs)) {
     //     return;
     // }
@@ -33,7 +34,7 @@ export function updateAttrs(oldVnode, vnode) {
     }
 
     // !添加/更新 class和style 源码中在其他地方调用，这里做简化
-    elm.setAttribute('class', vnode.data.class);
+    vnode.data.class && elm.setAttribute('class', vnode.data.class);
     if (vnode.data.style) {
         const style = vnode.data.style;
         for (const key in style) {

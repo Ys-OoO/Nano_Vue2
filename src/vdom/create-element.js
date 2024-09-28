@@ -11,13 +11,13 @@ export function createElement(instance, tag, data, children) {
   let Ctor;
   if (isReservedTag(tag)) {
     // 原生标签
-    vnode = new VNode(instance, tag, data, children, undefined, undefined);
+    vnode = new VNode(instance, tag, data, children.length ? children : null, undefined, undefined);
   } else if ((Ctor = resolveComponent(instance.$options.components, tag))) {
     // component
-    vnode = createComponent(Ctor, tag, data, context, children);
+    vnode = createComponent(Ctor, tag, data, context, children.length ? children : null);
   } else {
     // Unknow Tag
-    vnode = new VNode(instance, tag, data, children, undefined, undefined);
+    vnode = new VNode(instance, tag, data, children.length ? children : null, undefined, undefined);
   }
 
   return vnode;

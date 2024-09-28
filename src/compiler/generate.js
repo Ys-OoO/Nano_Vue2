@@ -70,6 +70,11 @@ function genData(el) {
   //目前只处理attrs
   let data = '{';
 
+  // key
+  if (el.key) {
+    data += `key:${el.key},`
+  }
+
   // class/style 
   transformers.forEach(transformers => {
     data += transformers.genData(el);

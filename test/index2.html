@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diff</title>
+</head>
+<script src="../dist/nano_vue.js"></script>
+
+<body>
+  <div id="app"><li>{{msg}}</li></div>
+</body>
+<script>
+    const instance = new NanoVue({
+        el:'#app',
+        data(){
+            return {
+                msg:'Hello'
+            }
+        }
+    })
+    // 测试Diff
+    setTimeout(()=>{
+        instance.msg = 'World'
+    },1000)
+</script>
+</html>

@@ -5,120 +5,122 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Nano Vue 2</title>
 </head>
+<script src="../dist/nano_vue.js"></script>
+
 <body>
   <div id="app"></div>
-  <script src="../dist/nano_vue.js"></script>
-
-<script>
-    // NanoVue.mixin({
-    //   data:{
-    //     a:1
-    //   },
-    //   beforeCreate(){
-
-    //   },
-    // })
-
-    NanoVue.component('subComponent',{
-      data:{
-        text : 'outer subComponent'
-      },
-      template:`<button>{{text}}</button>`
-    })
-    const instance = new NanoVue({
-      el: '#app',
-      template:`
-      <div id="app" class="nano_vue" v-on:click="handleClick" >
-        <p>info:    {{ info }}</p>
-        <span>
-          <subComponent></subComponent>
-        </span>
-      </div>
-    `,
-      components:{
-        'subComponent':{
-          template:`<div>{{ text }}</div>`,
-          data:{
-            text:'inner subComponent'
-          },
-          watch:{
-            text:{
-              handler(newV,oldV){
-                console.log('text change',newV,oldV);
-              },
-              immediate:true
-            }
-          }
-        }
-      },
-      data(){
-        return {
-          arr:[1,2,[3,4,5]],
-          name : 'ys',
-          age: 20,
-          obj : {
-            a: 'a'
-          }
-        }
-      },
-      computed: {
-        info:{
-          get(){
-            console.log('info get invoke');
-            return `${this.name} --- ${this.age}`;
-          }
-        }
-      },
-      // watch: {
-      //   name: {
-      //       handler(newV,oldV){
-      //         console.log('name',newV,oldV);
-      //       },
-      //       immediate:true
-      //   }
-      // }
-    });
-
-    // setTimeout(()=>{
-    //   instance.name = 'Ys'
-    // },1000)
-
-    // setTimeout(()=>{
-    //   instance.age = 24
-    // },2000)
-
-    // setTimeout(()=>{
-    //   instance.name = 'YsO_o'
-    // },3000)
-
-    
-    // const unwatch = instance.$watch('obj.a',(nv,ov)=>{
-    //     console.log('obj a modify',nv,ov);
-    //   });
-    
-    // setTimeout(()=>{
-    //   instance.obj.a = 'yyy';
-    //   unwatch();
-    // },1000);
-
-    // setTimeout(()=>{
-    //   instance.obj.a = 'xxx';
-    // },2000);
-
-
-    // setTimeout(()=>{
-    //   // instance.arr[2].push(1);
-    //   // instance.arr[2].push(2);
-    //   // instance.arr[2].push(3);
-    //   // instance.name = 'x1';
-    //   // instance.name = 'x2';
-    //   // instance.name = 'x3';
-    // },1000)
-
-    // instance.$nextTick(()=>{
-    //   instance.$set(instance.obj,'b','b')
-    // })
-
-  </script>
+  <div></div>
 </body>
+<script>
+  
+  // NanoVue.mixin({
+  //   data:{
+  //     a:1
+  //   },
+  //   beforeCreate(){
+
+  //   },
+  // })
+
+  NanoVue.component('subComponent',{
+    data:{
+      text : 'outer subComponent'
+    },
+    template:`<button>{{text}}</button>`
+  })
+  const instance = new NanoVue({
+    el: '#app',
+    template:`
+    <div id="app" class="nano_vue" v-on:click="handleClick" >
+      <p>info:    {{ info }}</p>
+      <span>
+        <subComponent></subComponent>
+      </span>
+    </div>
+  `,
+    components:{
+      'subComponent':{
+        template:`<div>{{ text }}</div>`,
+        data:{
+          text:'inner subComponent'
+        },
+        watch:{
+          text:{
+            handler(newV,oldV){
+              console.log('text change',newV,oldV);
+            },
+            immediate:true
+          }
+        }
+      }
+    },
+    data(){
+      return {
+        arr:[1,2,[3,4,5]],
+        name : 'ys',
+        age: 20,
+        obj : {
+          a: 'a'
+        }
+      }
+    },
+    computed: {
+      info:{
+        get(){
+          console.log('info get invoke');
+          return `${this.name} --- ${this.age}`;
+        }
+      }
+    },
+    // watch: {
+    //   name: {
+    //       handler(newV,oldV){
+    //         console.log('name',newV,oldV);
+    //       },
+    //       immediate:true
+    //   }
+    // }
+  });
+
+  // setTimeout(()=>{
+  //   instance.name = 'Ys'
+  // },1000)
+
+  // setTimeout(()=>{
+  //   instance.age = 24
+  // },2000)
+
+  // setTimeout(()=>{
+  //   instance.name = 'YsO_o'
+  // },3000)
+
+  
+  // const unwatch = instance.$watch('obj.a',(nv,ov)=>{
+  //     console.log('obj a modify',nv,ov);
+  //   });
+  
+  // setTimeout(()=>{
+  //   instance.obj.a = 'yyy';
+  //   unwatch();
+  // },1000);
+
+  // setTimeout(()=>{
+  //   instance.obj.a = 'xxx';
+  // },2000);
+
+
+  // setTimeout(()=>{
+  //   // instance.arr[2].push(1);
+  //   // instance.arr[2].push(2);
+  //   // instance.arr[2].push(3);
+  //   // instance.name = 'x1';
+  //   // instance.name = 'x2';
+  //   // instance.name = 'x3';
+  // },1000)
+
+  // instance.$nextTick(()=>{
+  //   instance.$set(instance.obj,'b','b')
+  // })
+
+</script>
 </html>
