@@ -8,20 +8,26 @@
 <script src="../dist/nano_vue.js"></script>
 
 <body>
-  <div id="app"><li>{{msg}}</li></div>
+  <div id="app"><li v-for="(item, index) in list">{{item}}</li></div>
 </body>
 <script>
     const instance = new NanoVue({
         el:'#app',
         data(){
             return {
-                msg:'Hello'
+                msg:'Hello',
+                list:[1,2,3,4]
             }
         }
     })
     // 测试Diff
+    // setTimeout(()=>{
+    //     instance.msg = 'World'
+    // },1000)
+
+    // v-for
     setTimeout(()=>{
-        instance.msg = 'World'
+        instance.list.push(5);
     },1000)
 </script>
 </html>

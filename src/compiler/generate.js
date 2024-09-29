@@ -13,7 +13,7 @@ import transformers from "./transformers/index.js";
  *        type: 3,
  *        text: 'nano_Vue {{version}}',
  *        parent: {tag:'div',....}
- *      } 
+ *      }
  *    ]
  * }
  * ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
@@ -21,33 +21,34 @@ import transformers from "./transformers/index.js";
  * 		return _c('div',data:{id:'app'},[_v("nano_Vue"+_s(version))])
  * }
  *
- * 遍历 AST 树，拼接为渲染函数string  
+ * 遍历 AST 树，拼接为渲染函数string
  * https://github.com/vuejs/vue/blob/73486cb5f5862a443b42c2aff68b82320218cbcd/src/compiler/codegen/index.ts#L57
  * @param {AST} astRoot 模板对应的AST树
  * @return {
-*  render: renderString,
-* }
-*/
+ *  render: renderString,
+ * }
+ */
 export function generate(astRoot) {
   const code = astRoot
-    ? astRoot.tag === 'script'
+    ? astRoot.tag === "script"
       ? null
       : genElement(astRoot)
-    : '_c("div")'
+    : '_c("div")';
 
+  console.log(code);
   return {
     render: `with(this){return ${code}}`,
-  }
+  };
 }
 
 /**
-* 根据AST节点生成渲染函数 
-* 对于组件或普通元素,生成创建VNode的代码
-* @param {AST} el 
-* @returns 
-*/
+ * 根据AST节点生成渲染函数
+ * 对于组件或普通元素,生成创建VNode的代码
+ * @param {AST} el
+ * @returns
+ */
 function genElement(el) {
-  // 后续完善对于 v-onec/v-if/v-for/v-slot/component等的代码生成
+  // 后续完善对于 v-onec/v-if/v-slot/component等的代码生成
 
   if (el.for && !el.forProcessed) {
     return genFor(el);
@@ -57,66 +58,78 @@ function genElement(el) {
     let data = genData(el);
     let children = genChildren(el);
 
-    code = `_c('${el.tag}'${data ? `,${data}` : '' // data
-      }${children ? `,${children}` : '' //children
-      })`
+    code = `_c('${el.tag}'${
+      data ? `,${data}` : "" // data
+    }${
+      children ? `,${children}` : "" //children
+    })`;
 
     return code;
   }
-
 }
 
 /**
  * 为 AST 中的v-for生成对应的渲染函数
  * 处理完成后会再次调用genElement处理其他数据
- * e.g. 
- * _l((exp),function(alias,it1,it2){
- *    return genElement(el);
+ * e.g.
+ * {
+ *     for: "list",
+ *     alias: "item",
+ *     iterator1: "name",
+ *     iterator2: "index"
+ * }
+ * ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+ * _l((list),function(item,name,index){
+ *    return _c(...) // 渲染函数
  * })
- * @param {*} el 
+ * @param {*} el
  */
 function genFor(el) {
-  const exp = el.for;  // 表达式
-  const alias = el.alias; // 别名
-  const iterator1 = el.iterator1 ? `,${el.iterator1}` : '';
-  const iterator2 = el.iterator2 ? `,${el.iterator2}` : '';
+  const exp = el.for; // 遍历对象
+  const alias = el.alias; // 单项别名
+  const iterator1 = el.iterator1 ? `,${el.iterator1}` : "";
+  const iterator2 = el.iterator2 ? `,${el.iterator2}` : "";
 
   el.forProcessed = true; // 标识for已经处理过了
-  return (
+
+  const code =
     `_l((${exp}),` +
     `function(${alias}${iterator1}${iterator2}){` +
     `return ${genElement(el)}` + // 内部调用genElement处理其他数据
-    '})'
-  )
+    "})";
+
+  return code;
 }
 
 /**
-* 为对应的AST生成data
-* 包括：key,ref,attrs,event等等
-* @param {AST} el 
-*/
+ * 为对应的AST生成data
+ * 包括：key,ref,attrs,event等等
+ * @param {AST} el
+ */
 function genData(el) {
   //目前只处理attrs
-  let data = '{';
+  let data = "{";
 
   // key
   if (el.key) {
-    data += `key:${el.key},`
+    data += `key:${el.key},`;
   }
 
-  // class/style 
-  transformers.forEach(transformers => {
+  // class/style
+  transformers.forEach((transformers) => {
     data += transformers.genData(el);
-  })
+  });
 
-  if (el.attrs) { // attrs
+  if (el.attrs) {
+    // attrs
     data += `attrs:${genProps(el.attrs)},`;
   }
 
-  if (el.events) { // events
-    data += `${genHandlers(el.events)},`
+  if (el.events) {
+    // events
+    data += `${genHandlers(el.events)},`;
   }
-  data = data.replace(/,$/, '') + '}';
+  data = data.replace(/,$/, "") + "}";
   return data;
 }
 
@@ -126,21 +139,21 @@ function genProps(props) {
     const prop = props[i];
     const value = transformSpecialNewlines(prop.value);
 
-    ret += `${prop.name}:${JSON.stringify(value)},`
+    ret += `${prop.name}:${JSON.stringify(value)},`;
   }
-  ret = `{${ret.slice(0, -1)}}`
+  ret = `{${ret.slice(0, -1)}}`;
   return ret;
 }
 
 function genHandlers(events) {
   function genHandler(handler) {
     if (Array.isArray(handler)) {
-      return `[${handler.map(h => genHandler(h)).join(',')}]`
+      return `[${handler.map((h) => genHandler(h)).join(",")}]`;
     }
 
     // 如果是路径（obj.func）或函数表达式 --- 未处理
 
-    return `function($event){${handler.value}}`
+    return `function($event){${handler.value}}`;
   }
 
   let handlers = ``;
@@ -148,8 +161,8 @@ function genHandlers(events) {
     const handlerCode = genHandler(events[name]);
     handlers += `"${name}":${handlerCode}`;
   }
-  handlers = `{${handlers}}`
-  return 'on:' + handlers;
+  handlers = `{${handlers}}`;
+  return "on:" + handlers;
 }
 
 function genNode(node) {
@@ -163,18 +176,18 @@ function genNode(node) {
 function genChildren(el) {
   const children = el.children;
   const gen = genNode;
-  return `[${children.map(c => gen(c)).join(',')}]`;
+  return `[${children.map((c) => gen(c)).join(",")}]`;
 }
 
 /**
-* 目的是将字符串内容进行转换，其中可能包含{{}}
-* e.g.  
-* welcome to {{pos}} {{time}}
-* ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
-* 'welcome to' + _s(pos) + _s(time)
-* @param {Text AST Node} textNode 
-* @returns 
-*/
+ * 目的是将字符串内容进行转换，其中可能包含{{}}
+ * e.g.
+ * welcome to {{pos}} {{time}}
+ * ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+ * 'welcome to' + _s(pos) + _s(time)
+ * @param {Text AST Node} textNode
+ * @returns
+ */
 function genText(textNode) {
   const defaultTagRE = /\{\{((?:.|\r?\n)+?)\}\}/g;
   let hasVaribale = defaultTagRE.test(textNode.text); // 是否有{{}}
@@ -183,10 +196,11 @@ function genText(textNode) {
     let match;
     let lastIndex = (defaultTagRE.lastIndex = 0); // 上次匹配到 '{{' 的索引
 
-    while (match = defaultTagRE.exec(textNode.text)) {
+    while ((match = defaultTagRE.exec(textNode.text))) {
       let index = match.index;
 
-      if (index > lastIndex) { //普通字符串
+      if (index > lastIndex) {
+        //普通字符串
         tokens.push(JSON.stringify(textNode.text.slice(lastIndex, index)));
       }
 
@@ -200,12 +214,14 @@ function genText(textNode) {
     }
   }
 
-  return `_v(${hasVaribale ? tokens.join('+')
-    : transformSpecialNewlines(JSON.stringify(textNode.text))
-    })`
+  return `_v(${
+    hasVaribale
+      ? tokens.join("+")
+      : transformSpecialNewlines(JSON.stringify(textNode.text))
+  })`;
 }
 
 // 转义行分隔符\u2028 和 段落分隔符\u2029
 function transformSpecialNewlines(text) {
-  return text.replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029')
+  return text.replace(/\u2028/g, "\\u2028").replace(/\u2029/g, "\\u2029");
 }

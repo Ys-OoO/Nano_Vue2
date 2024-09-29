@@ -1,13 +1,13 @@
 export function isFunc(arg) {
-  return typeof arg === 'function';
+  return typeof arg === "function";
 }
 
 export function isObject(arg) {
-  return typeof arg === 'object' && arg !== null;
+  return typeof arg === "object" && arg !== null;
 }
 
 export function isPlainObject(obj) {
-  return Object.prototype.toString.call(obj) === '[object Object]'
+  return Object.prototype.toString.call(obj) === "[object Object]";
 }
 
 export function isArray(arg) {
@@ -16,36 +16,37 @@ export function isArray(arg) {
 
 export function toString(val) {
   return val == null
-    ? ''
-    : Array.isArray(val) || (isPlainObject(val) && val.toString === Object.prototype.toString)
-      ? JSON.stringify(val)
-      : String(val)
+    ? ""
+    : Array.isArray(val) ||
+      (isPlainObject(val) && val.toString === Object.prototype.toString)
+    ? JSON.stringify(val)
+    : String(val);
 }
 
 export function isUndef(v) {
-  return v === undefined || v === null
+  return v === undefined || v === null;
 }
 
 export function isDef(v) {
-  return v !== undefined && v !== null
+  return v !== undefined && v !== null;
 }
 
 export function parsePath(path) {
-  const segments = path.split('.');
+  const segments = path.split(".");
   return function (obj) {
     for (let i = 0; i < segments.length; i++) {
       if (!obj) return;
       obj = obj[segments[i]];
     }
     return obj;
-  }
+  };
 }
 
 export function makeMap(str) {
   const map = Object.create(null);
-  const list = str.split(',');
+  const list = str.split(",");
   for (let i = 0; i < list.length; i++) {
-    map[list[i]] = true
+    map[list[i]] = true;
   }
-  return val => map[val.toLowerCase()];
+  return (val) => map[val.toLowerCase()];
 }

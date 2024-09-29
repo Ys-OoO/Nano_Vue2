@@ -2,12 +2,13 @@ import { addAttr, addHandler, getAndRemoveAttr } from "./helper.js";
 import transformers from "./transformers/index.js";
 // 源码中使用正则表达式来解析模板，在Vue3中则会使用状态机来进行：
 // 模板字符串 --词法分析--> tokens --语法分析--> AST
-const ncname = `[a-zA-Z_][\\-\\.0-9_a-zA-Z]*`; // 标签名 
+const ncname = `[a-zA-Z_][\\-\\.0-9_a-zA-Z]*`; // 标签名
 const qnameCapture = `((?:${ncname}\\:)?${ncname})`; //  用来获取标签名
 // 👆e.g. let r = "<tagNameX></tagNameX>".match(new Regex(qnameCapture)); // 则 r[1]为标签名"tagNameX"
 const startTagOpen = new RegExp(`^<${qnameCapture}`); // 匹配标签的开始 : <tagNameX> ---> ['<tagNameX','tagNameX',...]
 const endTag = new RegExp(`^<\\/${qnameCapture}[^>]*>`); // 匹配闭合标签的 : </tagNameX>
-const attribute = /^\s*([^\s"'<>\/=]+)(?:\s*(=)\s*(?:"([^"]*)"+|'([^']*)'+|([^\s"'=<>`]+)))?/; // 匹配属性key和value： a=b  a="b"  a='b' => ['a' ,"b"]
+const attribute =
+  /^\s*([^\s"'<>\/=]+)(?:\s*(=)\s*(?:"([^"]*)"+|'([^']*)'+|([^\s"'=<>`]+)))?/; // 匹配属性key和value： a=b  a="b"  a='b' => ['a' ,"b"]
 const startTagClose = /^\s*(\/?)>/; // 匹配标签的关闭: > 或 />
 const defaultTagRE = /\{\{((?:.|\r?\n)+?)\}\}/g; // 匹配插值语法内表达式：{{aaaaa}}
 
@@ -18,7 +19,7 @@ function createAstText(text) {
   return {
     type: 3,
     text,
-  }
+  };
 }
 function createAstElement(tagName, attrsList) {
   return {
@@ -26,17 +27,22 @@ function createAstElement(tagName, attrsList) {
     type: 1,
     children: [],
     parent: null,
-    attrsList
-  }
+    attrsList,
+  };
 }
-function start(tagName, attrsList) { // 构造AST树：处理开始标签
+function start(tagName, attrsList) {
+  // 构造AST树：处理开始标签
   const astElement = createAstElement(tagName, attrsList);
+
+  // 处理 v-for
+  processFor(astElement);
   if (!root) {
     root = astElement;
   }
   stack.push(astElement);
 }
-function chars(text) { // 构造AST树：处理内容
+function chars(text) {
+  // 构造AST树：处理内容
   text = text.replace(/\s+/g, "");
   let parent = stack[stack.length - 1];
   if (text) {
@@ -44,12 +50,14 @@ function chars(text) { // 构造AST树：处理内容
     parent.children[parent.children.length - 1].parent = parent;
   }
 }
-function end(tagName) { // 构造AST树：处理结束标签
+function end(tagName) {
+  // 构造AST树：处理结束标签
   const curNode = stack.pop();
   if (curNode.tag !== tagName) {
     throw new Error(`unexpected tag : ${tagName} in template.`);
   }
-  if (stack.length) { //非根节点，设置正确的parent
+  if (stack.length) {
+    //非根节点，设置正确的parent
     let parent = stack[stack.length - 1];
     parent.children.push(curNode);
     curNode.parent = parent;
@@ -62,8 +70,8 @@ function end(tagName) { // 构造AST树：处理结束标签
 
 /**
  * 将模板解析为 AST
- * e.g. 
- * <div id='app' v-on:click="handleClick">nano_Vue</div> 
+ * e.g.
+ * <div id='app' v-on:click="handleClick">nano_Vue</div>
  *    ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
  * {
  *  tag: 'div',
@@ -71,7 +79,7 @@ function end(tagName) { // 构造AST树：处理结束标签
  *  attrs:[{name:'id',value:'app'}],
  *  event:{
  *    click:{
- *      
+ *
  *    }
  *  }
  *  type: 1,
@@ -81,18 +89,18 @@ function end(tagName) { // 构造AST树：处理结束标签
  *        type: 3,
  *        text: 'nano_Vue',
  *        parent: {tag:'div',....}
- *      } 
+ *      }
  *    ]
  * }
  * @param {string} template 模板
- * @returns AST 
+ * @returns AST
  */
 export function parseTemplate(template) {
   root = null;
   stack = [];
   /**
    * 每解析完一段模板，就将其删除/或者说向前移动指针
-   * @param {number} len  
+   * @param {number} len
    */
   function advance(len) {
     template = template.substring(len);
@@ -105,8 +113,8 @@ export function parseTemplate(template) {
     if (startMatch) {
       const matched = {
         tagName: startMatch[1],
-        attrsList: []
-      }
+        attrsList: [],
+      };
       // 截取当前template: <div id='app'>{{123}}</div> ----> id='app'>{{123}}</div>
       advance(startMatch[0].length);
 
@@ -116,7 +124,8 @@ export function parseTemplate(template) {
       while (true) {
         endMatch = template.match(startTagClose);
         attrMatch = template.match(attribute);
-        if (endMatch || !attrMatch) { // 如果是结尾 或 没有匹配到属性就结束
+        if (endMatch || !attrMatch) {
+          // 如果是结尾 或 没有匹配到属性就结束
           advance(endMatch[0].length); // 删除结尾
           return matched;
         }
@@ -125,8 +134,8 @@ export function parseTemplate(template) {
         // 保存属性
         matched.attrsList.push({
           name: attrMatch[1],
-          value: attrMatch[3] || attrMatch[4] || attrMatch[5]
-        })
+          value: attrMatch[3] || attrMatch[4] || attrMatch[5],
+        });
         // 截取template中的该属性
         advance(attrMatch[0].length);
       }
@@ -136,8 +145,9 @@ export function parseTemplate(template) {
   }
 
   while (template) {
-    let lessIndex = template.indexOf('<'); // 符号'<'的索引
-    if (lessIndex === 0) { // 则当前template为开始或结束tag: <div.... 或 </div...
+    let lessIndex = template.indexOf("<"); // 符号'<'的索引
+    if (lessIndex === 0) {
+      // 则当前template为开始或结束tag: <div.... 或 </div...
       // 匹配开始标签
       const startTagMatch = parseStratTag(template);
       if (startTagMatch) {
@@ -164,9 +174,56 @@ export function parseTemplate(template) {
   return root;
 }
 
+export const forAliasRE = /([\s\S]*?)\s+(?:in|of)\s+([\s\S]*)/;
+export const forIteratorRE = /,([^,\}\]]*)(?:,([^,\}\]]*))?$/;
+const stripParensRE = /^\(|\)$/g;
+/**
+ * 在标签开始时调用（start）
+ * v-for="(item , name ,index ) in list"
+ * ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+ * {
+ *     for: "list",
+ *     alias: "item",
+ *     iterator1: "name",
+ *     iterator2: "index"
+ * }
+ * @param {ASTElement} element
+ */
+export function processFor(el) {
+  let exp;
+  if ((exp = getAndRemoveAttr(el, "v-for"))) {
+    // 解析For 提取出 变量别名(item)，迭代名(name/index)
+    let res = {};
+    const inMatch = exp.match(forAliasRE);
+    if (inMatch) {
+      res.for = inMatch[2].trim();
+      const alias = inMatch[1].trim().replace(stripParensRE, "");
+      const iteratorMatch = alias.match(forIteratorRE);
+      if (iteratorMatch) {
+        res.alias = alias.replace(forIteratorRE, "").trim();
+        res.iterator1 = iteratorMatch[1].trim();
+        if (iteratorMatch[2]) {
+          res.iterator2 = iteratorMatch[2].trim();
+        }
+      } else {
+        res.alias = alias;
+      }
+    }
+
+    if (inMatch) {
+      // 添加到el上
+      for (const key in res) {
+        el[key] = res[key];
+      }
+    } else {
+      console.error(`Invalid v-for expression: ${exp}`);
+    }
+  }
+}
+
 /**
  * 标签关闭时调用
- * @param {ASTElement} element 
+ * @param {ASTElement} element
  */
 function closeElement(element) {
   processKey(element);
@@ -174,7 +231,7 @@ function closeElement(element) {
 }
 
 function processKey(element) {
-  element.key = getAndRemoveAttr(element, 'key');
+  element.key = getAndRemoveAttr(element, "key");
 }
 
 /**
@@ -182,28 +239,27 @@ function processKey(element) {
  */
 function processElement(element) {
   // 将attrs中的class、style等提取出来
-  transformers.forEach(transformer => {
+  transformers.forEach((transformer) => {
     element = transformer.transformNode(element) || element;
   });
 
   processAttrs(element);
 }
 
-const dirRE = /^v-|^@|^:|^#/
-const onRE = /^@|^v-on:/
+const dirRE = /^v-|^@|^:|^#/;
+const onRE = /^@|^v-on:/;
 /**
  * 处理 标签的 Attrs
  */
 function processAttrs(element) {
   const list = element.attrsList;
-  list.forEach(attr => {
+  list.forEach((attr) => {
     let name = attr.name;
     let value = attr.value;
     if (dirRE.test(name)) {
-
       // 处理 v-on
       if (onRE.test(name)) {
-        name = name.replace(onRE, '');
+        name = name.replace(onRE, "");
         addHandler(element, name, value);
       }
     } else {
