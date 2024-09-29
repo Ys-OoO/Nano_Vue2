@@ -49,16 +49,45 @@ export function generate(astRoot) {
 function genElement(el) {
   // 后续完善对于 v-onec/v-if/v-for/v-slot/component等的代码生成
 
-  // element
-  let code;
-  let data = genData(el);
-  let children = genChildren(el);
+  if (el.for && !el.forProcessed) {
+    return genFor(el);
+  } else {
+    // element
+    let code;
+    let data = genData(el);
+    let children = genChildren(el);
 
-  code = `_c('${el.tag}'${data ? `,${data}` : '' // data
-    }${children ? `,${children}` : '' //children
-    })`
+    code = `_c('${el.tag}'${data ? `,${data}` : '' // data
+      }${children ? `,${children}` : '' //children
+      })`
 
-  return code;
+    return code;
+  }
+
+}
+
+/**
+ * 为 AST 中的v-for生成对应的渲染函数
+ * 处理完成后会再次调用genElement处理其他数据
+ * e.g. 
+ * _l((exp),function(alias,it1,it2){
+ *    return genElement(el);
+ * })
+ * @param {*} el 
+ */
+function genFor(el) {
+  const exp = el.for;  // 表达式
+  const alias = el.alias; // 别名
+  const iterator1 = el.iterator1 ? `,${el.iterator1}` : '';
+  const iterator2 = el.iterator2 ? `,${el.iterator2}` : '';
+
+  el.forProcessed = true; // 标识for已经处理过了
+  return (
+    `_l((${exp}),` +
+    `function(${alias}${iterator1}${iterator2}){` +
+    `return ${genElement(el)}` + // 内部调用genElement处理其他数据
+    '})'
+  )
 }
 
 /**
