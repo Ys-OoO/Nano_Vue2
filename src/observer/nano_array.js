@@ -36,7 +36,6 @@ methodsToPatch.forEach((method) => {
       this.__ob__.observeArray(inserted);
     }
     // 每个数组都会有__ob__指向其Observer，其中回保存一个Dep用于触发更新
-    debugger;
     this.__ob__.dep.notify();
 
     return result;

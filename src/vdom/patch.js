@@ -137,6 +137,7 @@ function createElm(vnode) {
  * ^对比情况有：新头===旧头  新尾===旧尾  旧头===新尾 旧尾===新头 四者都不相等
  */
 function updateChildren(parentElm, oldCh, newCh) {
+  debugger;
   // 双指针
   let oldStartIdx = 0;
   let newStartIdx = 0;
