@@ -102,24 +102,15 @@ function createElm(vnode) {
     if (children && children.length) {
       for (let i = 0; i < children.length; ++i) {
         const childV = children[i];
-        if (isArray(childV)) {
-          // 使用v-for，则其产生的一组子节点将作为当前vnode的一个孩子，故需要特殊处理
-          // <li v-for="item in 3"></li> => vnode:{children:[vnode,vnode,vnode]}
-          for (let i = 0; i < childV.length; i++) {
-            let childDom = createElm(childV[i]);
-            vnode.elm.appendChild(childDom);
-          }
-        } else {
-          const childDom = createElm(childV);
+        const childDom = createElm(childV);
 
-          if (isDef(data)) {
-            // 添加属性，源码中使用的是invokeCreateHooks,
-            // 传入的oldVnode为一个空的Vnode，表示为初次添加属性
-            updateAttrs(emptyNode, vnode);
-          }
-
-          vnode.elm.appendChild(childDom);
+        if (isDef(data)) {
+          // 添加属性，源码中使用的是invokeCreateHooks,
+          // 传入的oldVnode为一个空的Vnode，表示为初次添加属性
+          updateAttrs(emptyNode, vnode);
         }
+
+        vnode.elm.appendChild(childDom);
       }
     }
   } else {
@@ -137,7 +128,6 @@ function createElm(vnode) {
  * ^对比情况有：新头===旧头  新尾===旧尾  旧头===新尾 旧尾===新头 四者都不相等
  */
 function updateChildren(parentElm, oldCh, newCh) {
-  debugger;
   // 双指针
   let oldStartIdx = 0;
   let newStartIdx = 0;

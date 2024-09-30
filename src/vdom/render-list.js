@@ -26,6 +26,6 @@ export function renderList(val, render) {
   } else {
     ret = [];
   }
-  console.log(ret);
+
   return ret;
 }

@@ -62,7 +62,6 @@ function diff(oldTemp, newTemp) {
     let oldRender = compileToFunctions(oldTemp);
     let newRender = compileToFunctions(newTemp);
 
-    console.log(oldRender)
     // 虚拟DOM
     let instance = new NanoVue({});
     const oldVNode = oldRender.call(instance);

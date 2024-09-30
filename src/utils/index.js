@@ -2,6 +2,17 @@ export function isFunc(arg) {
   return typeof arg === "function";
 }
 
+
+export function isPrimitive(value) {
+  return (
+    typeof value === 'string' ||
+    typeof value === 'number' ||
+    typeof value === 'symbol' ||
+    typeof value === 'boolean'
+  )
+}
+
+
 export function isObject(arg) {
   return typeof arg === "object" && arg !== null;
 }
@@ -19,8 +30,8 @@ export function toString(val) {
     ? ""
     : Array.isArray(val) ||
       (isPlainObject(val) && val.toString === Object.prototype.toString)
-    ? JSON.stringify(val)
-    : String(val);
+      ? JSON.stringify(val)
+      : String(val);
 }
 
 export function isUndef(v) {
@@ -49,4 +60,20 @@ export function makeMap(str) {
     map[list[i]] = true;
   }
   return (val) => map[val.toLowerCase()];
+}
+
+
+/**
+ * Camelize a hyphen-delimited string.
+ */
+const camelizeRE = /-(\w)/g
+export const camelize = (str) => {
+  return str.replace(camelizeRE, (_, c) => (c ? c.toUpperCase() : ''))
+}
+
+/**
+ * Capitalize a string.
+ */
+export const capitalize = (str) => {
+  return str.charAt(0).toUpperCase() + str.slice(1)
 }
