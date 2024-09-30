@@ -247,7 +247,7 @@ function processIf(el) {
       block: el,
     });
   } else {
-    if (getAndRemoveAttr(el, "v-else")) {
+    if (getAndRemoveAttr(el, "v-else") !== null) {
       el.else = true;
     }
     const elseifExp = getAndRemoveAttr(el, "v-else-if");
@@ -261,12 +261,52 @@ function processIf(el) {
  * @param {ASTElement} element
  */
 function closeElement(element) {
+  // 处理v-else,v-else-if, 将其节点与v-if节点的ifConditions合并，以提供后续渲染函数的生成
+  if (element.parent) {
+    // 只处理非根节点
+    if (element.else || element.elseif) {
+      processIfConditions(element, element.parent);
+    }
+  }
+
+  // 处理 key
   processKey(element);
+
+  // 处理其他元素相关的属性
   processElement(element);
 }
 
 function processKey(element) {
   element.key = getAndRemoveAttr(element, "key");
+}
+
+/**
+ * 找到 v-else 和 v-else-if 节点的兄弟v-if节点，将对应的condition合入，并将这几个节点合并为一个节点
+ * @param {*} el
+ * @param {*} parent
+ */
+function processIfConditions(el, parent) {
+  let prevIf;
+  let finded = false;
+  const children = parent.children;
+  for (let i = children.length - 1; i >= 0; i--) {
+    const child = children[i];
+    if (child === el && !finded) {
+      finded = true;
+      children.splice(i, 1);
+    }
+    if (finded && child.if) {
+      prevIf = child;
+      break;
+    }
+  }
+
+  if (!prevIf) return;
+
+  prevIf.ifConditions.push({
+    exp: el.exp,
+    block: el,
+  });
 }
 
 /**

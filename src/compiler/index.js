@@ -8,9 +8,10 @@ import { parseTemplate } from "./parse.js";
 export function compileToFunctions(template) {
   // 1. template ---> AST
   const astRoot = parseTemplate(template.trim());
-  console.log(astRoot);
+
   // 2. AST ---> render
   const code = generate(astRoot);
+
   // 这里的 code 是用 with()包裹的，所需参数是this，也就是Vue实例
   return new Function(code.render);
 }
