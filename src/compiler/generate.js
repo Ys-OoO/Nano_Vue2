@@ -52,7 +52,7 @@ function genElement(el) {
   if (el.for && !el.forProcessed) {
     return genFor(el);
   } else if (el.if && !el.ifProcessed) {
-    return genIf(el);
+    return genIf(el, el.ifConditions.slice());
   } else {
     // element
     let code;
@@ -102,7 +102,21 @@ function genFor(el) {
   return code;
 }
 
-function genIf(el) {}
+function genIf(el, conditions) {
+  el.ifProcessed = true;
+
+  if (!conditions.length) {
+    return "_e()";
+  }
+
+  const condition = conditions.shift();
+  if (condition.exp) {
+    return `(${condition.exp} ? ${genElement(condition.block)} : ${genIf(
+      el,
+      condition
+    )} )`;
+  }
+}
 
 /**
  * 为对应的AST生成data

@@ -3,6 +3,7 @@ import { nextTick } from "./utils/next-tick.js";
 import { createElement } from "./vdom/create-element.js";
 import { createTextVNode } from "./vdom/create-text.js";
 import { renderList } from "./vdom/render-list.js";
+import { createEmptyVNode } from "./vdom/vnode.js";
 export function initRender(instance) {
   instance._c = (tag, data, children) =>
     createElement(instance, tag, data, children);
@@ -10,6 +11,7 @@ export function initRender(instance) {
   instance._s = (s) => toString(s);
 
   instance._l = (v, r) => renderList(v, r);
+  instance._e = () => createEmptyVNode();
 }
 
 export function renderMixin(NanoVue) {

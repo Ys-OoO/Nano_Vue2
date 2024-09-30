@@ -8,7 +8,14 @@
 <script src="../dist/nano_vue.js"></script>
 
 <body>
-  <div id="app"><li v-for="(item, index) in list">{{item}}</li></div>
+    <div id="app">
+        <div v-if="show">
+            {{msg}}
+        </div>
+        <div v-else>
+            {{msg}} "World"
+        </div>
+    </div>
 </body>
 <script>
     const instance = new NanoVue({
@@ -16,7 +23,8 @@
         data(){
             return {
                 msg:'Hello',
-                list:[1,2,3,4]
+                list:[1,2,3,4],
+                show: true
             }
         }
     })
@@ -26,8 +34,13 @@
     // },1000)
 
     // v-for
+    // setTimeout(()=>{
+    //     instance.list.push(5);
+    // },1000)
+
+    // v-if
     setTimeout(()=>{
-        instance.list.push(5);
+        instance.show = false;
     },1000)
 </script>
 </html>
