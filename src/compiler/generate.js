@@ -49,9 +49,10 @@ export function generate(astRoot) {
  */
 function genElement(el) {
   // 后续完善对于 v-onec/v-if/v-slot/component等的代码生成
-
   if (el.for && !el.forProcessed) {
     return genFor(el);
+  } else if (el.if && !el.ifProcessed) {
+    return genIf(el);
   } else {
     // element
     let code;
@@ -100,6 +101,8 @@ function genFor(el) {
 
   return code;
 }
+
+function genIf(el) {}
 
 /**
  * 为对应的AST生成data

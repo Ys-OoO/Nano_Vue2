@@ -36,6 +36,9 @@ function start(tagName, attrsList) {
 
   // 处理 v-for
   processFor(astElement);
+  // 处理 v-if
+  processIf(astElement);
+
   if (!root) {
     root = astElement;
   }
@@ -189,7 +192,7 @@ const stripParensRE = /^\(|\)$/g;
  * }
  * @param {ASTElement} element
  */
-export function processFor(el) {
+function processFor(el) {
   let exp;
   if ((exp = getAndRemoveAttr(el, "v-for"))) {
     // 解析For 提取出 变量别名(item)，迭代名(name/index)
@@ -221,6 +224,38 @@ export function processFor(el) {
   }
 }
 
+/**
+ * 在标签开始时调用（start）
+ * v-if="show"
+ * ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+ * {
+ *    if:"show",
+ *    ifConditions:[
+ *        { exp:"show", block:ASTElement }
+ *    ]
+ * }
+ * @param {ASTElement} element
+ */
+function processIf(el) {
+  const exp = getAndRemoveAttr(el, "v-if");
+  if (exp) {
+    el.if = exp;
+    // 条件
+    if (!el.ifConditions) el.ifConditions = [];
+    el.ifConditions.push({
+      exp: exp,
+      block: el,
+    });
+  } else {
+    if (getAndRemoveAttr(el, "v-else")) {
+      el.else = true;
+    }
+    const elseifExp = getAndRemoveAttr(el, "v-else-if");
+    if (elseifExp) {
+      el.elseif = elseifExp;
+    }
+  }
+}
 /**
  * 标签关闭时调用
  * @param {ASTElement} element
