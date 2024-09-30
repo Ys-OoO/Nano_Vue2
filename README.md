@@ -26,6 +26,8 @@ Nano_Vue2 aims to further understand the inner workings of Vue2
 * instance method / lifecycle:
   * instance.$mount
   * instance.$nextTick
+* directives:
+  * v-for
 
 
 # Contact me

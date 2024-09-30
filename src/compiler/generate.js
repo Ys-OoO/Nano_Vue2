@@ -35,7 +35,6 @@ export function generate(astRoot) {
       : genElement(astRoot)
     : '_c("div")';
 
-  console.log(code);
   return {
     render: `with(this){return ${code}}`,
   };
@@ -57,13 +56,11 @@ function genElement(el) {
     // element
     let code;
     let data = genData(el);
-    let children = genChildren(el);
+    let children = el.children && genChildren(el);
 
-    code = `_c('${el.tag}'${
-      data ? `,${data}` : "" // data
-    }${
-      children ? `,${children}` : "" //children
-    })`;
+    code = `_c('${el.tag}'${data ? `,${data}` : "" // data
+      }${children ? `,${children}` : "" //children
+      })`;
 
     return code;
   }
@@ -192,10 +189,33 @@ function genNode(node) {
 
 function genChildren(el) {
   const children = el.children;
-  const gen = genNode;
-  return `[${children.map((c) => gen(c)).join(",")}]`;
+  if (children.length) {
+    const child = children[0]
+    if (children.length === 1 && child.for) { // 对 v-for 特殊优化：当只有一个v-for子节点时，就不需要再调用渲染函数时进行扁平化了
+      return `${genElement(child)}`
+    } else {
+      // 渲染函数执行时，normalizationType用于判断孩子节点产生的Vnode是否是数组，进而进行扁平化
+      const normalizationType = getNormalizationType(children);
+      const gen = genNode;
+      return `[${children.map((c) => gen(c)).join(",")}]${normalizationType ? `,${normalizationType}` : ''}`;
+    }
+  }
 }
 
+function getNormalizationType(children) {
+  let res = 0;
+  for (let i = 0; i < children.length; i++) {
+    const el = children[i];
+    if (el.type != 1) {
+      continue;
+    }
+    if (el.for) {
+      res = 2;
+      break;
+    }
+  }
+  return res;
+}
 /**
  * 目的是将字符串内容进行转换，其中可能包含{{}}
  * e.g.
@@ -231,11 +251,10 @@ function genText(textNode) {
     }
   }
 
-  return `_v(${
-    hasVaribale
-      ? tokens.join("+")
-      : transformSpecialNewlines(JSON.stringify(textNode.text))
-  })`;
+  return `_v(${hasVaribale
+    ? tokens.join("+")
+    : transformSpecialNewlines(JSON.stringify(textNode.text))
+    })`;
 }
 
 // 转义行分隔符\u2028 和 段落分隔符\u2029
