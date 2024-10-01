@@ -186,7 +186,14 @@ function updateChildren(parentElm, oldCh, newCh) {
       if (isUndef(idxInOld)) {
         // 没有找到可复用的oldVnode
         const elm = createElm(newStartVnode);
-        parentElm.appendChild(elm);
+        // 判断插入位置
+        if (oldStartVnode.elm) {
+          // 如果老的头节点仍然存在，说明新增的节点可能是替换老节点，应插入在前面
+          parentElm.insertBefore(elm, oldStartVnode.elm);
+        } else {
+          // 否则说明新增节点是替换或追加的，向后插入
+          parentElm.appendChild(elm);
+        }
       } else {
         // 可以复用
         vnodeToMove = oldCh[idxInOld];
