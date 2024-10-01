@@ -28,6 +28,7 @@ Nano_Vue2 aims to further understand the inner workings of Vue2
   * instance.$nextTick
 * directives:
   * v-for
+  * v-if
 
 
 # Contact me
