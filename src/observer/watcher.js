@@ -27,7 +27,7 @@ export default class Watcher {
     this.depsIds = new Set(); // 存储依赖的id
 
     // 处理expOrFn
-    if (typeof expOrFn === 'function') {
+    if (typeof expOrFn === "function") {
       this.getter = expOrFn; // 取名为getter是因为该函数执行会去当前实例上 获取最新的数据
     } else {
       this.getter = parsePath(expOrFn); // 此时会触发在实例上通过代理获取data中的数据，同时触发了defineProperty.get收集依赖
@@ -69,13 +69,14 @@ export default class Watcher {
   /**
    * 这里的调度主要在schduler中实现：大致思路就是：缓存要调用watcher，进而统一处理
    * 目的是让多次状态修改操作合并为一次，调用run触发视图更新
-   * 
+   *
    * 对于 Computed Watcher ，则只需要修改该watcher的dirty，表示当前 watcher 需要重新计算
    * 因为 update 的调用是由于 Dep触发了notify，后续就是视图更新了（执行渲染函数（执行属性的get）），所以只需要表示该watcher即可
    * getter的执行在 state.js -> createComputedGetter
    */
   update() {
-    if (this.lazy) { //如果是 Computed Watcher
+    if (this.lazy) {
+      //如果是 Computed Watcher
       this.dirty = true;
     } else {
       queueWatcher(this);

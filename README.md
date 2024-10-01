@@ -15,7 +15,8 @@ Nano_Vue2 aims to further understand the inner workings of Vue2
   * template
   * render
 * options / Lifecycle Hook:
-  * _pending..._
+  * beforeMount
+  * mounted (only root instance)
 * instance property:
   * $data
   * $options
