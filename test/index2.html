@@ -12,9 +12,10 @@
         <div v-if="show">
             {{msg}}
         </div>
-        <div v-else>
+        <p v-else>
             {{msg}} "World"
-        </div>
+        </p>
+        <div>{{hello()}}</div>
     </div>
 </body>
 <script>
@@ -25,6 +26,11 @@
                 msg:'Hello',
                 list:[1,2,3,4],
                 show: true
+            }
+        },
+        methods:{
+            hello(){
+                return 'method hello return'
             }
         }
     })

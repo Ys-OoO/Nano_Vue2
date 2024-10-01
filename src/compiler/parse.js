@@ -132,12 +132,11 @@ export function parseTemplate(template) {
           advance(endMatch[0].length); // 删除结尾
           return matched;
         }
-
         // 此时已经匹配到属性了
         // 保存属性
         matched.attrsList.push({
           name: attrMatch[1],
-          value: attrMatch[3] || attrMatch[4] || attrMatch[5],
+          value: attrMatch[3] || attrMatch[4] || attrMatch[5] || true, // 如果只有属性名而没有值，则默认为true; 例如v-else ==> v-else:true
         });
         // 截取template中的该属性
         advance(attrMatch[0].length);
@@ -261,7 +260,7 @@ function processIf(el) {
  * @param {ASTElement} element
  */
 function closeElement(element) {
-  // 处理v-else,v-else-if, 将其节点与v-if节点的ifConditions合并，以提供后续渲染函数的生成
+  // 处理v-else || v-else-if, 将其节点与v-if节点的ifConditions合并，以提供后续渲染函数的生成
   if (element.parent) {
     // 只处理非根节点
     if (element.else || element.elseif) {

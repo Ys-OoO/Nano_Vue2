@@ -1,9 +1,9 @@
-import Dep from './observer/dep.js';
+import Dep from "./observer/dep.js";
 import { observe, set } from "./observer/index.js";
 import Watcher from "./observer/watcher.js";
 import { isFunc, isPlainObject } from "./utils/index.js";
 /**
- * @example 
+ * @example
  * data(){
  *    return {
  *      obj:{a:1},
@@ -14,7 +14,7 @@ import { isFunc, isPlainObject } from "./utils/index.js";
  * 但是我们希望this.obj/instance.obj是可以访问到的，而不需要this._data.xxx
  * 因此进行代理，代理的对象不仅限于data配置项
  * !代理和劫持的优势：相比于在原型链上增加属性以达到同样的效果，代理的存取更高效，原型链查找低效
- * 
+ *
  * @param {NanoVue} instance 实例
  * @param {string} sourceName 存储状态/方法的私有属性名，这里可以是 _data、...
  * @param {string} key 私有属性中的外层属性
@@ -26,21 +26,36 @@ function proxy(instance, sourceName, key) {
     },
     set(newValu) {
       instance[sourceName][key] = newValu;
-    }
-  })
+    },
+  });
 }
 
+/**
+ * 初始化 method
+ * 将method挂载到当前实例
+ * @param {*} instance
+ * @param {*} methods
+ */
+function initMethods(instance, methods) {
+  for (const key in methods) {
+    instance[key] =
+      typeof methods[key] !== "function"
+        ? () => {}
+        : methods[key].bind(instance);
+  }
+}
 /**
  * 初始化 data
  * 1. 代理data，使其能够直接通过实例或this获取
  * 2. 将 data 上的所有数据进行数据劫持/监听
  * 3. 绑定到实例_data属性上
- * @param {*} instance 
+ * @param {*} instance
  */
 function initData(instance) {
   const options = instance.$options;
   let data;
-  if (isFunc(options.data)) { //绑定this，并调用获取
+  if (isFunc(options.data)) {
+    //绑定this，并调用获取
     data = options.data.call(instance);
   } else {
     data = options.data;
@@ -52,7 +67,7 @@ function initData(instance) {
   //对data进行代理
   for (const key in data) {
     if (Object.hasOwnProperty.call(data, key)) {
-      proxy(instance, '_data', key);
+      proxy(instance, "_data", key);
     }
   }
 
@@ -68,23 +83,22 @@ function initComputed(instance, computedOpts) {
     const getter = isFunc(userDef) ? userDef : userDef.get;
 
     // 创建 Computed Watcher
-    watchers[key] = new Watcher(instance, getter, () => { }, {
+    watchers[key] = new Watcher(instance, getter, () => {}, {
       lazy: true, // Coputed Watcher的标识
-    })
+    });
 
     // 对computed key 进行劫持
     defineComputed(instance, key, userDef);
   }
 }
 
-
 function defineComputed(instance, key, userDef) {
   const sharedPropertyDefinition = {
     enumerable: true,
     configurable: true,
-    get: () => { },
-    set: () => { }
-  }
+    get: () => {},
+    set: () => {},
+  };
 
   if (isFunc(userDef)) {
     sharedPropertyDefinition.get = createComputedGetter(key);
@@ -113,7 +127,7 @@ function createComputedGetter(key) {
       }
       return watcher.value;
     }
-  }
+  };
 }
 
 /**
@@ -145,6 +159,11 @@ function createWatcher(instance, expOrFn, handler, options) {
  */
 export default function initState(instance) {
   const options = instance.$options;
+  // init method
+  if (options.methods) {
+    initMethods(instance, options.methods);
+  }
+
   // init data
   if (options.data) {
     initData(instance);
@@ -163,7 +182,6 @@ export default function initState(instance) {
 
 export function stateMixin(NanoVue) {
   NanoVue.prototype.$set = set;
-
 
   NanoVue.prototype.$watch = function (expOrFn, cb, options) {
     const instance = this;
@@ -184,6 +202,6 @@ export function stateMixin(NanoVue) {
     // 返回取消watch的函数
     return function unwatchFn() {
       watcher.teardown();
-    }
-  }
+    };
+  };
 }
