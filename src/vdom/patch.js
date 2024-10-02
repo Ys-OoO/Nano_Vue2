@@ -137,7 +137,7 @@ function createElm(vnode) {
  * 同层比较：只会比较同一层级的节点，即oldCh和newCh的关系
  * 双端索引：分别指向oldCh和newCh的首尾
  *
- * ^对比情况有：新头===旧头  新尾===旧尾  旧头===新尾 旧尾===新头 四者都不相等
+ * ^对比情况有：1.新头===旧头  2.新尾===旧尾  3.旧头===新尾 4.旧尾===新头 5.四者都不相等
  */
 function updateChildren(parentElm, oldCh, newCh) {
   // 双指针
