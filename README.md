@@ -36,6 +36,22 @@ Nano_Vue2 aims to further understand the inner workings of Vue2
   * v-if
   * v-on
 
+# Initial Flow
+```text
+HTML String 
+(👇parse👇) 
+              Abstract Struct Tree 
+                (👇generate👇)
+                                  Render Function 
+                                   (👇invoke👇)
+                                                  Virtual DOM 
+                                                  (👇patch👇)
+                                                              DOM
+```
+
+# Reactive
+> Reactive = Observer pattern + [Object.defineProperty](./src/observer/index.js)
+> Observer pattern = [Watcher(Observer)](./src/observer/watcher.js) + [Dep(observale object)](./src/observer/dep.js)
 
 # Contact me
 * WeChat：ys5-14
