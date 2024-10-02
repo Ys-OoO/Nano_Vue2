@@ -51,6 +51,7 @@ HTML String
 
 # Reactive
 > Reactive = Observer pattern + [Object.defineProperty](./src/observer/index.js)
+> 
 > Observer pattern = [Watcher(Observer)](./src/observer/watcher.js) + [Dep(observale object)](./src/observer/dep.js)
 
 # Contact me
