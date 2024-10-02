@@ -58,11 +58,9 @@ function genElement(el) {
     let data = genData(el);
     let children = el.children && genChildren(el);
 
-    code = `_c('${el.tag}'${
-      data ? `,${data}` : "" // data
-    }${
-      children ? `,${children}` : "" //children
-    })`;
+    code = `_c('${el.tag}'${data ? `,${data}` : "" // data
+      }${children ? `,${children}` : "" //children
+      })`;
 
     return code;
   }
@@ -171,9 +169,8 @@ function genHandlers(events) {
       return `[${handler.map((h) => genHandler(h)).join(",")}]`;
     }
 
-    // 如果是路径（obj.func）或函数表达式 --- 未处理
-
-    return `function($event){${handler.value}}`;
+    // 如果是路径（obj.func）或函数表达式
+    return handler.value;
   }
 
   let handlers = ``;
@@ -204,9 +201,8 @@ function genChildren(el) {
       // 渲染函数执行时，normalizationType用于判断孩子节点产生的Vnode是否是数组，进而进行扁平化
       const normalizationType = getNormalizationType(children);
       const gen = genNode;
-      return `[${children.map((c) => gen(c)).join(",")}]${
-        normalizationType ? `,${normalizationType}` : ""
-      }`;
+      return `[${children.map((c) => gen(c)).join(",")}]${normalizationType ? `,${normalizationType}` : ""
+        }`;
     }
   }
 }
@@ -260,11 +256,10 @@ function genText(textNode) {
     }
   }
 
-  return `_v(${
-    hasVaribale
-      ? tokens.join("+")
-      : transformSpecialNewlines(JSON.stringify(textNode.text))
-  })`;
+  return `_v(${hasVaribale
+    ? tokens.join("+")
+    : transformSpecialNewlines(JSON.stringify(textNode.text))
+    })`;
 }
 
 // 转义行分隔符\u2028 和 段落分隔符\u2029

@@ -10,6 +10,7 @@ Nano_Vue2 aims to further understand the inner workings of Vue2
   * data
   * watch
   * computed
+  * methods
 * options / DOM:
   * el
   * template
@@ -30,6 +31,7 @@ Nano_Vue2 aims to further understand the inner workings of Vue2
 * directives:
   * v-for
   * v-if
+  * v-on
 
 
 # Contact me

@@ -1,7 +1,8 @@
-import { isArray, isDef, isUndef } from "../utils/index.js";
-import { updateAttrs } from "./attrs.js";
+import { isDef, isUndef } from "../utils/index.js";
 import VNode from "./vnode.js";
+import modules from "./modules/index.js";
 
+const { updateAttrs, updateEvents: updateDOMListeners, destoryEvents: destoryDOMListeners } = modules;
 const emptyNode = new VNode(undefined, "", {}, []);
 
 // ~ BEGIN : 一些内部方法
@@ -36,6 +37,7 @@ function removeVnodes(vnodes, startIdx, endIdx, parentElm) {
       const parent = ch.parent || parentElm;
       if (isDef(parent)) {
         parent.removeChild(ch.elm);
+        destoryDOMListeners(ch);
       }
     }
   }
@@ -56,6 +58,16 @@ function findIdxInOld(node, oldCh, start, end) {
     const c = oldCh[i];
     if (isDef(c) && sameVnode(node, c)) return i;
   }
+}
+
+function invokeCreateHooks(vnode) {
+  updateAttrs(emptyNode, vnode);
+  updateDOMListeners(emptyNode, vnode);
+}
+
+function invokeUpdateHooks(oldvnode, vnode) {
+  updateAttrs(oldvnode, vnode);
+  updateDOMListeners(oldvnode, vnode);
 }
 // ~ END : 一些内部方法
 
@@ -105,9 +117,9 @@ function createElm(vnode) {
         const childDom = createElm(childV);
 
         if (isDef(data)) {
-          // 添加属性，源码中使用的是invokeCreateHooks,
+          // 添加属性，源码中使用的是invokeCreateHooks（已同步）
           // 传入的oldVnode为一个空的Vnode，表示为初次添加属性
-          updateAttrs(emptyNode, vnode);
+          invokeCreateHooks(vnode);
         }
 
         vnode.elm.appendChild(childDom);
@@ -230,14 +242,14 @@ function updateChildren(parentElm, oldCh, newCh) {
  * @param {*} oldVnode
  * @param {*} vnode
  */
-function patchVnode(oldVnode, vnode, chList, index) {
+function patchVnode(oldVnode, vnode) {
   if (oldVnode === vnode) return;
 
   const elm = (vnode.elm = oldVnode.elm);
 
-  // 处理标签属性attrs,style,class,源码中对应 invokeCreateHooks
+  // 处理标签属性attrs,style,class,源码中对应 invokeCreateHooks (已同步)
   if (isDef(vnode.data)) {
-    updateAttrs(oldVnode, vnode);
+    invokeUpdateHooks(oldVnode, vnode);
   }
 
   /**
@@ -280,7 +292,7 @@ function patchVnode(oldVnode, vnode, chList, index) {
  */
 export function patch(oldVnode, vnode) {
   if (isUndef(oldVnode)) {
-    // *不存在旧虚拟节点，说明当前为 **组件** ，无对应的$el选项，因此也没有oldVnode
+    // *不存在旧虚拟节点，说明当前为 **组件** ，无对应的$el选项，因此没有oldVnode
     // 源码注释：空挂载（可能作为组件），创建新的根元素
     createElm(vnode);
   } else {

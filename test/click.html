@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="../dist/nano_vue.js"></script> 
+</head>
+<body>
+    <div id="app">
+        <p>{{count}}</p>
+        <button v-on:click="(e)=>{console.log(e);handleClick(e,2);}">click</button>
+    </div>
+</body>
+<script>
+    new NanoVue({
+        el:'#app',
+        data(){
+            return {
+                count:0,
+            }
+        },
+        methods:{
+            handleClick(e,plus){
+                this.count+=plus;
+            }
+        }
+    })
+</script>
+</html>

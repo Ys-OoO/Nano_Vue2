@@ -1,4 +1,4 @@
-import { isUndef } from "../utils/index.js";
+import { isUndef } from "../../utils/index.js";
 
 /**
  * 为真实DOM 生成/更新Attrs
