@@ -29,15 +29,14 @@ import transformers from "./transformers/index.js";
  * }
  */
 export function generate(astRoot) {
-  const code = astRoot
-    ? astRoot.tag === "script"
-      ? null
-      : genElement(astRoot)
-    : '_c("div")';
-
-  return {
-    render: `with(this){return ${code}}`,
-  };
+    const code = astRoot
+        ? astRoot.tag === "script"
+            ? null
+            : genElement(astRoot)
+        : '_c("div")';
+    return {
+        render: `with(this){return ${code}}`,
+    };
 }
 
 /**
@@ -47,23 +46,25 @@ export function generate(astRoot) {
  * @returns
  */
 function genElement(el) {
-  // 后续完善对于 v-onec/v-if/v-slot/component等的代码生成
-  if (el.for && !el.forProcessed) {
-    return genFor(el);
-  } else if (el.if && !el.ifProcessed) {
-    return genIf(el, el.ifConditions.slice());
-  } else {
-    // element
-    let code;
-    let data = genData(el);
-    let children = el.children && genChildren(el);
+    // 后续完善对于 v-onec/v-if/v-slot/component等的代码生成
+    if (el.for && !el.forProcessed) {
+        return genFor(el);
+    } else if (el.if && !el.ifProcessed) {
+        return genIf(el, el.ifConditions.slice());
+    } else {
+        // element
+        let code;
+        let data = genData(el);
+        let children = el.children && genChildren(el);
 
-    code = `_c('${el.tag}'${data ? `,${data}` : "" // data
-      }${children ? `,${children}` : "" //children
-      })`;
+        code = `_c('${el.tag}'${
+            data ? `,${data}` : "" // data
+        }${
+            children ? `,${children}` : "" //children
+        })`;
 
-    return code;
-  }
+        return code;
+    }
 }
 
 /**
@@ -83,40 +84,40 @@ function genElement(el) {
  * @param {*} el
  */
 function genFor(el) {
-  const exp = el.for; // 遍历对象
-  const alias = el.alias; // 单项别名
-  const iterator1 = el.iterator1 ? `,${el.iterator1}` : "";
-  const iterator2 = el.iterator2 ? `,${el.iterator2}` : "";
+    const exp = el.for; // 遍历对象
+    const alias = el.alias; // 单项别名
+    const iterator1 = el.iterator1 ? `,${el.iterator1}` : "";
+    const iterator2 = el.iterator2 ? `,${el.iterator2}` : "";
 
-  el.forProcessed = true; // 标识for已经处理过了
+    el.forProcessed = true; // 标识for已经处理过了
 
-  const code =
-    `_l((${exp}),` +
-    `function(${alias}${iterator1}${iterator2}){` +
-    `return ${genElement(el)}` + // 内部调用genElement处理其他数据
-    "})";
+    const code =
+        `_l((${exp}),` +
+        `function(${alias}${iterator1}${iterator2}){` +
+        `return ${genElement(el)}` + // 内部调用genElement处理其他数据
+        "})";
 
-  return code;
+    return code;
 }
 
 function genIf(el, conditions) {
-  el.ifProcessed = true;
+    el.ifProcessed = true;
 
-  if (!conditions.length) {
-    return "_e()";
-  }
+    if (!conditions.length) {
+        return "_e()";
+    }
 
-  const condition = conditions.shift();
-  if (condition.exp) {
-    // v-if v-else-if;
-    return `(${condition.exp} ? ${genElement(condition.block)} : ${genIf(
-      el,
-      conditions
-    )} )`;
-  } else {
-    // v-else
-    return `${genElement(condition.block)}`;
-  }
+    const condition = conditions.shift();
+    if (condition.exp) {
+        // v-if v-else-if;
+        return `(${condition.exp} ? ${genElement(condition.block)} : ${genIf(
+            el,
+            conditions
+        )} )`;
+    } else {
+        // v-else
+        return `${genElement(condition.block)}`;
+    }
 }
 
 /**
@@ -125,101 +126,102 @@ function genIf(el, conditions) {
  * @param {AST} el
  */
 function genData(el) {
-  //目前只处理attrs
-  let data = "{";
+    //目前只处理attrs
+    let data = "{";
 
-  // key
-  if (el.key) {
-    data += `key:${el.key},`;
-  }
+    // key
+    if (el.key) {
+        data += `key:${el.key},`;
+    }
 
-  // class/style
-  transformers.forEach((transformers) => {
-    data += transformers.genData(el);
-  });
+    // class/style
+    transformers.forEach((transformers) => {
+        data += transformers.genData(el);
+    });
 
-  if (el.attrs) {
-    // attrs
-    data += `attrs:${genProps(el.attrs)},`;
-  }
+    if (el.attrs) {
+        // attrs
+        data += `attrs:${genProps(el.attrs)},`;
+    }
 
-  if (el.events) {
-    // events
-    data += `${genHandlers(el.events)},`;
-  }
-  data = data.replace(/,$/, "") + "}";
-  return data;
+    if (el.events) {
+        // events
+        data += `${genHandlers(el.events)},`;
+    }
+    data = data.replace(/,$/, "") + "}";
+    return data;
 }
 
 function genProps(props) {
-  let ret = ``;
-  for (let i = 0; i < props.length; i++) {
-    const prop = props[i];
-    const value = transformSpecialNewlines(prop.value);
+    let ret = ``;
+    for (let i = 0; i < props.length; i++) {
+        const prop = props[i];
+        const value = transformSpecialNewlines(prop.value);
 
-    ret += `${prop.name}:${JSON.stringify(value)},`;
-  }
-  ret = `{${ret.slice(0, -1)}}`;
-  return ret;
+        ret += `${prop.name}:${JSON.stringify(value)},`;
+    }
+    ret = `{${ret.slice(0, -1)}}`;
+    return ret;
 }
 
 function genHandlers(events) {
-  function genHandler(handler) {
-    if (Array.isArray(handler)) {
-      return `[${handler.map((h) => genHandler(h)).join(",")}]`;
+    function genHandler(handler) {
+        if (Array.isArray(handler)) {
+            return `[${handler.map((h) => genHandler(h)).join(",")}]`;
+        }
+
+        // 如果是路径（obj.func）或函数表达式
+        return handler.value;
     }
 
-    // 如果是路径（obj.func）或函数表达式
-    return handler.value;
-  }
-
-  let handlers = ``;
-  for (const name in events) {
-    const handlerCode = genHandler(events[name]);
-    handlers += `"${name}":${handlerCode}`;
-  }
-  handlers = `{${handlers}}`;
-  return "on:" + handlers;
+    let handlers = ``;
+    for (const name in events) {
+        const handlerCode = genHandler(events[name]);
+        handlers += `"${name}":${handlerCode}`;
+    }
+    handlers = `{${handlers}}`;
+    return "on:" + handlers;
 }
 
 function genNode(node) {
-  if (node.type === 1) {
-    return genElement(node);
-  } else if (node.type === 3) {
-    return genText(node);
-  }
+    if (node.type === 1) {
+        return genElement(node);
+    } else if (node.type === 3) {
+        return genText(node);
+    }
 }
 
 function genChildren(el) {
-  const children = el.children;
-  if (children.length) {
-    const child = children[0];
-    if (children.length === 1 && child.for) {
-      // 对 v-for 特殊优化：当只有一个v-for子节点时，就不需要再调用渲染函数时进行扁平化了
-      return `${genElement(child)}`;
-    } else {
-      // 渲染函数执行时，normalizationType用于判断孩子节点产生的Vnode是否是数组，进而进行扁平化
-      const normalizationType = getNormalizationType(children);
-      const gen = genNode;
-      return `[${children.map((c) => gen(c)).join(",")}]${normalizationType ? `,${normalizationType}` : ""
-        }`;
+    const children = el.children;
+    if (children.length) {
+        const child = children[0];
+        if (children.length === 1 && child.for) {
+            // 对 v-for 特殊优化：当只有一个v-for子节点时，就不需要再调用渲染函数时进行扁平化了
+            return `${genElement(child)}`;
+        } else {
+            // 渲染函数执行时，normalizationType用于判断孩子节点产生的Vnode是否是数组，进而进行扁平化
+            const normalizationType = getNormalizationType(children);
+            const gen = genNode;
+            return `[${children.map((c) => gen(c)).join(",")}]${
+                normalizationType ? `,${normalizationType}` : ""
+            }`;
+        }
     }
-  }
 }
 
 function getNormalizationType(children) {
-  let res = 0;
-  for (let i = 0; i < children.length; i++) {
-    const el = children[i];
-    if (el.type != 1) {
-      continue;
+    let res = 0;
+    for (let i = 0; i < children.length; i++) {
+        const el = children[i];
+        if (el.type != 1) {
+            continue;
+        }
+        if (el.for) {
+            res = 2;
+            break;
+        }
     }
-    if (el.for) {
-      res = 2;
-      break;
-    }
-  }
-  return res;
+    return res;
 }
 /**
  * 目的是将字符串内容进行转换，其中可能包含{{}}
@@ -231,38 +233,41 @@ function getNormalizationType(children) {
  * @returns
  */
 function genText(textNode) {
-  const defaultTagRE = /\{\{((?:.|\r?\n)+?)\}\}/g;
-  let hasVaribale = defaultTagRE.test(textNode.text); // 是否有{{}}
-  let tokens = [];
-  if (hasVaribale) {
-    let match;
-    let lastIndex = (defaultTagRE.lastIndex = 0); // 上次匹配到 '{{' 的索引
+    const defaultTagRE = /\{\{((?:.|\r?\n)+?)\}\}/g;
+    let hasVaribale = defaultTagRE.test(textNode.text); // 是否有{{}}
+    let tokens = [];
+    if (hasVaribale) {
+        let match;
+        let lastIndex = (defaultTagRE.lastIndex = 0); // 上次匹配到 '{{' 的索引
 
-    while ((match = defaultTagRE.exec(textNode.text))) {
-      let index = match.index;
+        while ((match = defaultTagRE.exec(textNode.text))) {
+            let index = match.index;
 
-      if (index > lastIndex) {
-        //普通字符串
-        tokens.push(JSON.stringify(textNode.text.slice(lastIndex, index)));
-      }
+            if (index > lastIndex) {
+                //普通字符串
+                tokens.push(
+                    JSON.stringify(textNode.text.slice(lastIndex, index))
+                );
+            }
 
-      tokens.push(`_s(${match[1].trim()})`);
-      lastIndex = index + match[0].length;
+            tokens.push(`_s(${match[1].trim()})`);
+            lastIndex = index + match[0].length;
+        }
+
+        // 收集剩余普通字符串
+        if (lastIndex < textNode.text.length) {
+            tokens.push(JSON.stringify(textNode.text.slice(lastIndex)));
+        }
     }
 
-    // 收集剩余普通字符串
-    if (lastIndex < textNode.text.length) {
-      tokens.push(JSON.stringify(textNode.text.slice(lastIndex)));
-    }
-  }
-
-  return `_v(${hasVaribale
-    ? tokens.join("+")
-    : transformSpecialNewlines(JSON.stringify(textNode.text))
+    return `_v(${
+        hasVaribale
+            ? tokens.join("+")
+            : transformSpecialNewlines(JSON.stringify(textNode.text))
     })`;
 }
 
 // 转义行分隔符\u2028 和 段落分隔符\u2029
 function transformSpecialNewlines(text) {
-  return text.replace(/\u2028/g, "\\u2028").replace(/\u2029/g, "\\u2029");
+    return text.replace(/\u2028/g, "\\u2028").replace(/\u2029/g, "\\u2029");
 }

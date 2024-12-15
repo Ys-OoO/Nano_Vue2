@@ -4,6 +4,7 @@ export default [
     env: {
       browser: true, // 允许使用浏览器环境中的全局变量，如 window 和 document
       es2021: true, // 支持 ECMAScript 2021 的语法
+      node: true,
     },
     // 解析器选项，定义如何解析不同的 ECMAScript 版本和模块
     parserOptions: {

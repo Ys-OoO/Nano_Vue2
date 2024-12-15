@@ -1,14 +1,15 @@
 /*
-* @author Ys_OoO
-* 源码使用构造函数实现，这里也可以采用es6 class实现
-* 这里沿用构造函数的实现方式
-*/
+ * @author Ys_OoO
+ * 源码使用构造函数实现，这里也可以采用es6 class实现
+ * 这里沿用构造函数的实现方式
+ */
 
-import { initGlobalApi } from './global-api/index.js';
-import initMixin from './init.js';
-import { lifecycleMixin } from './lifecycle.js';
-import { renderMixin } from './render.js';
-import { stateMixin } from './state.js';
+import { initGlobalApi } from "./global-api/index.js";
+import initMixin from "./init.js";
+import { lifecycleMixin } from "./lifecycle.js";
+import { renderMixin } from "./render.js";
+import { stateMixin } from "./state.js";
+import { isServerRendering } from "./utils/env.js";
 
 function NanoVue(options) {
   // do init
@@ -34,4 +35,8 @@ stateMixin(NanoVue);
 // 初始化全局API : mixin
 initGlobalApi(NanoVue);
 
+// !SSR
+Object.defineProperty(NanoVue.prototype, "$isServer", {
+  get: isServerRendering,
+});
 export default NanoVue;
