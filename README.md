@@ -70,7 +70,7 @@ const render = createRenderer();
 render.renderToString(app, (err, res) => {});
 ```
 
-However, HTML templates are not supported. In addition, I directly used the CSR compiler, many instructions were not compatible, and a large part of the magic was modified. In Vue SSR, there is actually a similar compiler to be compatible with the server-side scenario.
+However, HTML templates are not supported. In addition, I directly used the CSR compiler, many directives were not compatible, and a large part of the magic was modified. In Vue SSR, there is actually a similar compiler to be compatible with the server-side scenario.
 
 ## Client Side
 
