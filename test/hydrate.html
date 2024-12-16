@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>hydrate</title>
+    </head>
+    <script src="../dist/nano_vue.js"></script>
+
+    <body>
+        <div data-server-rendered="true" id="app"><div id="foo">1</div></div>
+    </body>
+</html>
+
+<script>
+    const instance = new NanoVue({
+        template: `<div id="app"><div id="foo" @click="handleClick">{{count}}</div></div>`,
+        data: {
+            count: 1,
+        },
+        methods: {
+            handleClick() {
+                this.count++;
+            },
+        },
+    });
+    instance.$mount("#app");
+</script>

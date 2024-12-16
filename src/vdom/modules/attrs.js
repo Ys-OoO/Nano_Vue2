@@ -3,7 +3,7 @@ import { isUndef } from "../../utils/index.js";
 /**
  * 为真实DOM 生成/更新Attrs
  * @param {*} oldVnode // ^初次添加属性时，为 空Vnode, 具体使用见patch.js中的patchVnode和creatElm
- * @param {*} vnode 
+ * @param {*} vnode
  */
 export function updateAttrs(oldVnode, vnode) {
     // 由于这里简化了对style和class的处理，因此不直接拦截
@@ -34,7 +34,7 @@ export function updateAttrs(oldVnode, vnode) {
     }
 
     // !添加/更新 class和style 源码中在其他地方调用，这里做简化
-    vnode.data.class && elm.setAttribute('class', vnode.data.class);
+    vnode.data.class && elm.setAttribute("class", vnode.data.class);
     if (vnode.data.style) {
         const style = vnode.data.style;
         for (const key in style) {
@@ -45,10 +45,10 @@ export function updateAttrs(oldVnode, vnode) {
         const oldStyle = oldVnode.data.style;
         const style = vnode.data.style;
         if (!style) {
-            elm.style = '';
+            elm.style = "";
         } else {
             for (const key in oldStyle) {
-                elm.style[key] = style?.[key] || '';
+                elm.style[key] = style?.[key] || "";
             }
         }
     }

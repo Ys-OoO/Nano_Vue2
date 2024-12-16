@@ -70,11 +70,38 @@ const render = createRenderer();
 render.renderToString(app, (err, res) => {});
 ```
 
-However, HTML templates are not supported. In addition, I directly used the CSR compiler, many directives were not compatible, and a large part of the magic was modified. In Vue SSR, there is actually a similar compiler to be compatible with the server-side scenario.
+However, HTML templates are not supported. In addition, I directly used the CSR compiler, many directives were not compatible, and a large part of the magic was modified. In Vue SSR, there is actually a similar compiler to be compatible with the server-side scenario. Currently, it can only convert HTML tags and strings. Component level is not implemented yet.
 
 ## Client Side
 
-The next step will be to simply implement hydrate!
+Currently, NanoVue2 has implemented some hydration capabilities (only supports simple elements). The core of this part is:
+
+1. When `$mount`, it will obtain whether there is a server-rendered tag on the target mounted DOM: `data-server-rendered='true'`, and hydrate if it exists.
+2. During the hydration process, since the client will also execute code similar to `new NanoVue()`, a virtual DOM tree has been generated according to the template. `hydrate` after `$mount` will match the virtual DOM tree with the real DOM tree one by one to determine whether the hydration is successful
+
+Demo:
+Server Rendered HTML
+
+```html
+<div data-server-rendered="true" id="app"><div id="foo">1</div></div>
+```
+
+Client Side Script
+
+```js
+const instance = new NanoVue({
+    template: `<div id="app"><div id="foo" @click="handleClick">{{count}}</div></div>`,
+    data: {
+        count: 1,
+    },
+    methods: {
+        handleClick() {
+            this.count++;
+        },
+    },
+});
+instance.$mount("#app");
+```
 
 # Contact me
 

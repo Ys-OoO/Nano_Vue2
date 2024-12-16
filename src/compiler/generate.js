@@ -158,7 +158,7 @@ function genProps(props) {
         const prop = props[i];
         const value = transformSpecialNewlines(prop.value);
 
-        ret += `${prop.name}:${JSON.stringify(value)},`;
+        ret += `"${prop.name}":${JSON.stringify(value)},`;
     }
     ret = `{${ret.slice(0, -1)}}`;
     return ret;

@@ -55,7 +55,7 @@ function mount(containerEle, hydrating) {
     // 此时当前实例必有render渲染函数
 
     // Began 2.执行渲染函数构造虚拟DOM Tree & 3.根据虚拟DOM生成/更新真实DOM
-    mountComponent(instance, container);
+    mountComponent(instance, container, hydrating);
 }
 
 export default function initMixin(NanoVue) {
@@ -63,8 +63,5 @@ export default function initMixin(NanoVue) {
     NanoVue.prototype._init = init;
 
     // 注入挂载方法
-    NanoVue.prototype.$mount = (el) => {
-        const hydrating = NanoVue.prototype.$isServer;
-        mount(el, hydrating);
-    };
+    NanoVue.prototype.$mount = mount;
 }

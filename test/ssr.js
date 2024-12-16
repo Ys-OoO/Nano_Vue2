@@ -6,7 +6,12 @@ function print(info) {
 }
 
 const app = new NanoVue({
-    template: '<div id="foo" bar="123">TextNode</div>',
+    template: '<div id="foo" bar="123">{{count}}</div>',
+    data() {
+        return {
+            count: 1,
+        };
+    },
 });
 const render = createRenderer();
 render.renderToString(app, (e, res) => {
