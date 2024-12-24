@@ -44,12 +44,18 @@ HTML String
 (👇parse👇)
               Abstract Struct Tree
                 (👇generate👇)
-                                  Render Function
-                                   (👇invoke👇)
-                                                  Virtual DOM
-                                                  (👇patch👇)
-                                                              DOM
+                                   Render Function
+                                    (👇invoke👇)
+                                                   Virtual DOM
+                                                   (👇patch👇)
+                                                                DOM
 ```
+
+## Expand
+
+In Vue2, converting HTML to AST uses regular expressions.
+
+In Vue3, this step is implemented by implementing a finite state machine according to the [WhatWG](https://html.spec.whatwg.org/multipage/parsing.html#tokenization) specification. In fact, the bottom layer of regularity can also be understood as a finite state machine.
 
 # Reactive
 
