@@ -40,7 +40,7 @@ Nano_Vue2 aims to further understand the inner workings of Vue2
 # Initial Flow
 
 ```text
-HTML String
+Template String
 (👇parse👇)
               Abstract Struct Tree
                 (👇generate👇)
@@ -51,11 +51,31 @@ HTML String
                                                                 DOM
 ```
 
-## Expand
+## vs. Vue3
 
 In Vue2, converting HTML to AST uses regular expressions.
 
 In Vue3, this step is implemented by implementing a finite state machine according to the [WhatWG](https://html.spec.whatwg.org/multipage/parsing.html#tokenization) specification. In fact, the bottom layer of regularity can also be understood as a finite state machine.
+
+Vue 3 Initial Flow:
+
+```text
+Template String
+(👇parse👇)
+              Abstract Struct Tree
+                (👇generate👇)
+                                   AST for RenderFunction
+                                    (👇transform👇)
+                                                        Render Function
+                                                         (👇invoke👇)
+                                                                        Virtual DOM
+                                                                        (👇patch👇)
+                                                                                    DOM
+```
+
+You will find that there are more steps. This is because Vue2’s approach is a bit tricky! More details are implemented in Vue3, making the architecture more flexible.
+
+**Vue3 implements a finite state machine to parse the template to generate Tokens, generate AST through Tokens, and then traverse the AST to generate the AST that can construct the rendering function.**
 
 # Reactive
 
